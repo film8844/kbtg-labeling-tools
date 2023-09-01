@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">
+    Flask Login Example 
+</h1>
+<h2 class="subtitle">
+    Welcome, {{current_user.username}}!
+
+</h2>
+<h1>All Projects</h1>
+<ul>
+    {% for project in projects %}
+        <li>{{ project.id }} - {{ project.name }} - {{ project.type }}</li>
+    {% endfor %}
+</ul>
+
+
+{% endblock %}
