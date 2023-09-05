@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style>
+    /* styles.css */
+    #drop-area {
+    border: 2px dashed #ccc;
+    width: 480px;
+    margin: 20px auto;
+    padding: 20px;
+    }
+
+    #drop-area.highlight {
+    border-color: purple;
+    }
+
+    .button {
+    display: inline-block;
+    padding: 10px;
+    background: #ccc;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    }
+
+    .button:hover {
+    background: #ddd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>{{project.name}}</h1>
+
+    <h2>Upload Image</h2>
+    <div id="drop-area">
+    <form class="my-form">
+        <p>Drag and drop files here</p>
+        <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
+        <label class="button" for="fileElem">Select some files</label>
+    </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='upload.js') }}"></script>
+{% endblock %}

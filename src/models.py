@@ -24,9 +24,9 @@ class Project(db.Model):
     name = db.Column(db.String(20), unique=True, nullable=False)
     type = db.Column(db.String(120), unique=True, nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    member = db.relationship('User', secondary=project_user, backref='posts')
 
     def list(self):
         return (self.id, self.name, self.username, self.type)
+    
     
 

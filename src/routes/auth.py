@@ -8,6 +8,7 @@ router = Blueprint('auth', __name__)
 
 @router.route('/login', methods=['GET','POST'])
 def login():
+    if current_user.is_authenticated: return redirect(url_for('main.home'))
     form = LoginForm()
     if form.validate_on_submit():
         # return form.username.data+" "+form.password.data

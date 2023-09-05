@@ -7,11 +7,15 @@ import os
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-
+UPLOAD_FOLDER = 'static/uploads'
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'kbtg'
+
+    
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
     basedir = os.path.abspath(
         os.path.dirname(__file__)
     )

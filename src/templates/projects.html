@@ -11,9 +11,21 @@
 <h1>All Projects</h1>
 <ul>
     {% for project in projects %}
-        <li>{{ project.id }} - {{ project.name }} - {{ project.type }}</li>
+
+        <li><a href="{{ url_for('main.project',id=project.id) }}"">{{ project.name }}<span class="badge bg-secondary">{{ project.type }}</span><a></li>
     {% endfor %}
 </ul>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category %}
+            <div class="alert alert-{{ category }}" role="alert">
+                {{ message }}
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 
 
 {% endblock %}
