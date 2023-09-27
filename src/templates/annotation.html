@@ -1,45 +1,136 @@
 {% extends "base.html" %}
 
 {% block css %}
-<style>
-    /* styles.css */
-    #drop-area {
-    border: 2px dashed #ccc;
-    width: 480px;
-    margin: 20px auto;
-    padding: 20px;
-    }
-
-    #drop-area.highlight {
-    border-color: purple;
-    }
-
-    .button {
-    display: inline-block;
-    padding: 10px;
-    background: #ccc;
-    cursor: pointer;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    }
-
-    .button:hover {
-    background: #ddd;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
-    <h1>{{project.name}}</h1>
+<div class="pagetitle d-flex justify-content-between align-content-center">
+    <div class="pagetitle">
+        <h1>Projects : {{project.name}}</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item "><a href="{{url_for('main.home')}}">Projects</a></li>
+                <li class="breadcrumb-item active">{{project.name}}</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+    <div>
+        <a href="{{url_for('main.project_upload',id=project.id)}}" class="btn btn-warning">
+            <i class="bx bx-upload"></i> Upload Data</a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-model"><i
+                class="bx bxs-folder-minus"></i> Delete</button>
+    </div>
+</div>
 
-    <h2>Upload Image</h2>
-    <div id="drop-area">
-    <form class="my-form">
-        <p>Drag and drop files here</p>
-        <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
-        <label class="button" for="fileElem">Select some files</label>
-    </form>
+
+<section class="section">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <script src="{{ url_for('static', filename='upload.js') }}"></script>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+        <div class="card top-selling overflow-auto">
+            <div class="card-body pb-0">
+                <h5 class="card-title">Tasks <span>| Today</span></h5>
+
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th scope="col">Preview</th>
+                            <th scope="col">Path</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Boxes</th>
+                            <th scope="col">By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        
+                        <tr>
+                            
+                            <th scope="row"><a href="{{ url_for('main.project_task',id=task.id) }}"><img class=" rounded"  src="../{{ task.path }}" width="75" height="75" alt="{{task.path}}"></a></th>
+                            <td><a href="{{ url_for('main.project_task',id=task.id) }}">{{task.path}}</a></td>
+                            <td>{% if task.finished %}
+                                <span class="badge bg-success">Completed</span>
+                                {% elif task.label_by %}
+                                <span class="badge bg-warning">In Progress</span>
+                                {% else %}
+                                <span class="badge bg-danger">Not Started</span>
+                                {% endif %}
+                            </td>
+                            <td class=" fw-bold">{{task.label|length}}</td>
+                            <td>
+                                {% if task.label_by %}
+                                <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+                                    <img src="{{ url_for('auth.profile_img', id=task.label_by) }}" width="30" height="30" alt="Profile" class="rounded-circle">
+            
+                                </a>
+                                {% endif %}
+                            </td>
+                                
+                        
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+    <!-- Gallery -->
+    <!-- <div class="row">
+        {% for task in tasks %}
+        <div class="col-lg-3 col-md-12 mb-4 mb-lg-0">
+            <a href="{{ url_for('main.project_task',id=task.id) }}">
+                <img src="../{{ task.path }}" class="w-100 shadow-1-strong rounded mb-4" width="200" height="200"
+                    alt="{{task.path}}" />
+            </a>
+        </div>
+        {% endfor %}
+    </div> -->
+    <!-- Gallery -->
+
+
+
+
+
+
+</section>
+<!-- End Vertically centered Modal -->
+<div class="modal fade" id="delete-model" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    Fill the confirm text
+                    <input class="form-control" type="text">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div><!-- End Basic Modal-->
+<!-- End Vertically centered Modal  -->
+
+{% endblock %}
+
+{% block script %}
 {% endblock %}

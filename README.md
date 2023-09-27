@@ -47,6 +47,13 @@ python setup.py
 ```
 
 # run on local
-```python
-python run
+3. run docker database
+```bash
+docker compose up -d --build
+```
+2.
+```bash
+cd src
+export $(cat ../.env)
+python run.py
 ```

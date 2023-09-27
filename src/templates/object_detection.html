@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style>
+    #vertical-guide,
+    #horizontal-guide {
+        position: absolute;
+        background-color: gray;
+        pointer-events: none;
+        /* ensures the guidelines don't interfere with other mouse events */
+        display: none;
+        /* hide them by default */
+        z-index: 10;
+        /* position them above other elements, adjust as needed */
+    }
+
+    #vertical-guide {
+        width: 1px;
+        height: 100%;
+        top: 0;
+    }
+
+    #horizontal-guide {
+        height: 1px;
+        width: 100%;
+        left: 0;
+    }
+
+
+    #image-container {
+        position: relative;
+    }
+
+    #image-container :hover {
+        cursor: crosshair;
+    }
+
+    #image {
+        max-width: 100%;
+    }
+
+    #image :hover {
+        cursor: crosshair;
+    }
+
+    .annotation {
+        position: absolute;
+        border: 2px solid red;
+        background-color: rgba(255, 0, 0, 0.2);
+    }
+
+    .annotation :hover {
+        cursor: pointer !important;
+    }
+
+    .annotation.selected {
+        border: 2px dashed gray;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pagetitle d-flex justify-content-between align-content-center">
+    <div class="pagetitle">
+        <h1>Projects : {{project.name}}</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item "><a href="{{url_for('main.home')}}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{{url_for('main.project',id=project.id)}}">{{project.name}}</a>
+                </li>
+                <li class="breadcrumb-item active">{{task.path}}</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+    <div>
+        <button type="button" id="save-button" class="btn btn-primary "><i class="bx bxs-save"></i> Save</button>
+        <button type="button" id="submit-button" class="btn btn-success"><i class="bx bxs-save"></i> Submit</button>
+    </div>
+</div>
+
+
+<section class=" section">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <!-- Gallery -->
+    <div id="image-container">
+        <div id="vertical-guide"></div>
+        <div id="horizontal-guide"></div>
+        <img id="image" width="100%" draggable="false" src="../{{task.path}}" alt="Image for annotation">
+    </div>
+    <div class="row mt-3">
+        <div class="col-lg-6">
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tools</h5>
+                    <select id="color-picker">
+                        <option value="red">Red</option>
+                        <option value="green">Green</option>
+                        <option value="blue">Blue</option>
+                        <option value="yellow">Yellow</option>
+                        <option value="purple">Purple</option>
+                    </select>
+                    <div id="zoom-controls">
+                        <button id="zoom-in">Zoom In</button>
+                        <button id="zoom-out">Zoom Out</button>
+                        <span>Zoom Level: <span id="zoom-level">100</span>%</span>
+                    </div>
+                    <button id="delete-button">Delete Selected</button>
+                    <button id="reset-button">Reset</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-6">
+
+            <div class="card">
+                <div id="annotation-list" class="card-body">
+                    <h5 class="card-title">Annotation List</h5>
+                    <ul id="list">
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Gallery -->
+
+
+
+
+</section>
+<!-- End Vertically centered Modal -->
+<div class="modal fade" id="delete-model" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    Fill the confirm text
+                    <input class="form-control" type="text">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div><!-- End Basic Modal-->
+<!-- End Vertically centered Modal  -->
+{% endblock %}
+
+{% block script %}
+<!-- <script src="../static/scripts/drowing.js"></script> -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const image = document.getElementById('image');
+        const container = document.getElementById('image-container');
+        const annotationList = document.getElementById('list');
+        const zoomInButton = document.getElementById('zoom-in');
+        const zoomOutButton = document.getElementById('zoom-out');
+        const zoomLevelSpan = document.getElementById('zoom-level');
+        const deleteButton = document.getElementById('delete-button');
+        const colorPicker = document.getElementById('color-picker');
+        const saveButton = document.getElementById('save-button');
+        const submitButton = document.getElementById('submit-button');
+        const resetButton = document.getElementById('reset-button');
+
+        let zoomLevel = 100;
+        let drawing = false;
+        let start_x = 0;
+        let start_y = 0;
+        let boxes = [];
+        let firstBox = [];
+
+        let undoStack = [];
+
+        const verticalGuide = document.getElementById('vertical-guide');
+        const horizontalGuide = document.getElementById('horizontal-guide');
+
+        container.addEventListener('mousemove', function (event) {
+            const rect = container.getBoundingClientRect();
+            const xPos = event.clientX - rect.left;
+            const yPos = event.clientY - rect.top;
+
+            verticalGuide.style.left = xPos + 'px';
+            horizontalGuide.style.top = yPos + 'px';
+            verticalGuide.style.display = 'block';
+            horizontalGuide.style.display = 'block';
+        });
+
+        container.addEventListener('mouseleave', function () {
+            verticalGuide.style.display = 'none';
+            horizontalGuide.style.display = 'none';
+        });
+
+
+        saveButton.addEventListener('click', updateDatabase)
+        submitButton.addEventListener('click', submitTask)
+
+        // Fetch boxes from the API
+        function fetchBoxes() {
+            fetch(`{{url_for('api.get_task',id=task.id)}}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    boxes = [...data]; // Assign fetched boxes to the boxes array
+                    firstBox = [...data]
+                    updateAnnotations();
+                    updateList();
+                    
+                })
+                .catch(error => {
+                    console.error('Failed fetching boxes:', error);
+                });
+            
+        }
+
+        // Assuming you have the imageId somewhere, you can call this function
+        fetchBoxes();
+
+    async function updateDatabase() {
+        res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}}),
+    })
+    firstBox = [...boxes]
+    updateList()
+    console.log({ "label": boxes, "label_by": {{ current_user.id }}})
+    }
+    async function submitTask() {
+        res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}, "finished": true}),
+        })
+        firstBox = [...boxes]
+        console.log({ "label": boxes, "label_by": {{ current_user.id }}, "finished": true})
+    }
+
+    function updateAnnotations() {
+        
+        const existingAnnotations = document.querySelectorAll('.annotation');
+        existingAnnotations.forEach((annotation) => {
+            annotation.remove();
+        });
+
+        boxes.forEach((box, index) => createAnnotation(box, index));
+    }
+
+    function arraysHaveSameContent(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    return arr1.slice().sort().every((value, index) => value === arr2.slice().sort()[index]);
+    }
+    function updateList() {
+        if (arraysHaveSameContent(boxes, firstBox)) {
+            saveButton.classList.add('disabled');
+            // console.log(saveButton.classList)
+            console.log('disabled')
+            console.log(`box`);
+            console.log(boxes);
+            console.log(`firstBox`);
+            console.log(firstBox);
+        } else {
+            saveButton.classList.remove('disabled');
+            console.log('show')
+            console.log(`box`);
+            console.log(boxes);
+            console.log(`firstBox`);
+            console.log(firstBox);
+        }
+        annotationList.innerHTML = '';
+        boxes.forEach((box, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `Box ${index + 1}: x=${box.x}, y=${box.y}, width=${box.width}, height=${box.height}, class=${box.backgroundColor}`;
+            annotationList.appendChild(listItem);
+        });
+    }
+
+    function adjustZoom(factor) {
+        zoomLevel += factor;
+        zoomLevel = Math.min(Math.max(zoomLevel, 50), 200);
+        image.style.width = `${zoomLevel}%`;
+        zoomLevelSpan.textContent = zoomLevel;
+
+        // Original dimensions
+        const originalWidth = image.naturalWidth;
+        const originalHeight = image.naturalHeight;
+
+        // Displayed dimensions
+        const displayedWidth = image.width;
+        const displayedHeight = image.height;
+
+        console.log(`Original dimensions: ${originalWidth}x${originalHeight}`);
+        console.log(`Displayed dimensions: ${displayedWidth}x${displayedHeight}`);
+        updateAnnotations();
+    }
+
+    function createAnnotation(box, index) {
+        const annotation = document.createElement('div');
+        annotation.className = 'annotation';
+        annotation.dataset.index = index;
+
+        annotation.style.borderColor = box.borderColor;
+        annotation.style.backgroundColor = box.backgroundColor
+
+
+        annotation.addEventListener('click', function () {
+            annotation.classList.toggle('selected');
+        });
+
+        annotation.style.left = `${box.x * image.width}px`;
+        annotation.style.top = `${box.y * image.height}px`;
+        annotation.style.width = `${box.width * image.width}px`;
+        annotation.style.height = `${box.height * image.height}px`;
+
+        container.appendChild(annotation);
+    }
+
+    image.addEventListener('mousedown', function (event) {
+        drawing = true;
+        const rect = image.getBoundingClientRect();
+        start_x = (event.clientX - rect.left);
+        start_y = (event.clientY - rect.top);
+        console.log(`x=${start_x} , y=${start_y}`);
+    });
+
+    image.addEventListener('mouseup', function (event) {
+        if (!drawing) return;
+        drawing = false;
+
+        const rect = image.getBoundingClientRect();
+        const end_x = (event.clientX - rect.left);
+        const end_y = (event.clientY - rect.top);
+
+
+        const selectedColor = colorPicker.value;
+        const borderColor = selectedColor;
+        const backgroundColor =
+            selectedColor === 'red' ? 'rgba(255,0,0,0.2)' :
+                selectedColor === 'green' ? 'rgba(0,255,0,0.2)' :
+                    selectedColor === 'blue' ? 'rgba(0,0,255,0.2)' :
+                        selectedColor === 'yellow' ? 'rgba(255,255,0,0.2)' :
+                            'rgba(128,0,128,0.2)'; // Default to purple
+        const box = {
+            x: Math.min(start_x, end_x) / image.width,
+            y: Math.min(start_y, end_y) / image.height,
+            width: Math.abs(end_x - start_x) / image.width,
+            height: Math.abs(end_y - start_y) / image.height,
+            borderColor: borderColor,
+            backgroundColor: backgroundColor
+        };
+        if (box.height == 0 || box.width == 0) return;
+
+
+        boxes.push(box);
+        
+        updateAnnotations();
+        updateList();
+    });
+
+    zoomInButton.addEventListener('click', function () {
+        adjustZoom(10);
+    });
+
+    zoomOutButton.addEventListener('click', function () {
+        adjustZoom(-10);
+    });
+
+
+    deleteButton.addEventListener('click', function () {
+        // Collect all the selected annotations
+        const selectedAnnotations = document.querySelectorAll('.annotation.selected');
+
+        // Get their indices
+        const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
+
+        // Remove the annotation element from the DOM
+        selectedAnnotations.forEach(annotation => {
+            annotation.remove();
+        });
+
+        // Remove the corresponding boxes
+        boxes = boxes.filter((box, index) => !indicesToDelete.includes(index));
+
+        // Update indices and re-render all remaining annotations
+        updateAnnotations();
+        updateList();
+    });
+
+    resetButton.addEventListener('click', function () {
+        boxes = []
+        updateAnnotations();
+        updateList();
+    })
+
+    // Listen for keyboard shortcuts for undo (Ctrl+Z) and redo (Ctrl+Shift+Z)
+    document.addEventListener('keydown', function (event) {
+
+        if (event.key === 'Backspace') {
+            // Perform deletion here
+            const selectedAnnotations = document.querySelectorAll('.annotation.selected');
+
+            // Get their indices
+            const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
+
+            // Remove the annotation element from the DOM
+            selectedAnnotations.forEach(annotation => {
+                annotation.remove();
+            });
+
+            // Remove the corresponding boxes
+            boxes = boxes.filter((box, index) => !indicesToDelete.includes(index));
+
+            // Update indices and re-render all remaining annotations
+            updateAnnotations();
+            updateList();
+        }
+
+
+        // Check if Ctrl+Z is pressed
+        if (event.ctrlKey && event.key === 'z') {
+            if (boxes.length > 0) {
+                // Pop the last box and store it in the undo stack
+                const lastBox = boxes.pop();
+                undoStack.push(lastBox);
+
+                // Update annotations and list
+                updateAnnotations();
+                updateList();
+            }
+        }
+        // Implement Ctrl+Shift+Z for redo
+        else if (event.ctrlKey && event.shiftKey && event.key === 'Z') {
+            if (undoStack.length > 0) {
+                // Pop the last undone box and put it back in boxes
+                const lastUndoneBox = undoStack.pop();
+                boxes.push(lastUndoneBox);
+
+                // Update annotations and list
+                updateAnnotations();
+                updateList();
+            }
+        }
+    });
+
+});
+
+</script>
+{% endblock %}

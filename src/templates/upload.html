@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block css %}
+{{ dropzone.load_css() }}
+{{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 400px;') }}
+{% endblock %}
+
+{% block content %}
+<div class="pagetitle d-flex justify-content-between align-content-center">
+    <div class="pagetitle">
+        <h1>Upload Data Projects : {{project.name}}</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item "><a href="{{url_for('main.home')}}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{{url_for('main.project',id=project.id)}}">{{project.name}}</a></li>
+                <li class="breadcrumb-item active">Upload file</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+</div>
+
+
+<section class="vh-100 section">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {{ dropzone.create(action=url_for('main.upload_file',project_id=project.id)) }}
+
+
+
+</section>
+<div class="modal fade" id="upload" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('main.create_project') }}" method="post">
+                <div class="modal-body">
+
+
+
+                    here
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- End Vertically centered Modal -->
+<div class="modal fade" id="delete-model" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    Fill the confirm text
+                    <input class="form-control" type="text">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div><!-- End Basic Modal-->
+<!-- End Vertically centered Modal  -->
+
+{% endblock %}
+
+{% block script %}
+{{ dropzone.load_js() }}
+{{ dropzone.config() }}
+{% endblock %}

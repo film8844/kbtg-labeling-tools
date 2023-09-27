@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 src/database.db
+src/static/images/*
