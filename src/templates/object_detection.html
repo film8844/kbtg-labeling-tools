@@ -195,6 +195,12 @@
         const verticalGuide = document.getElementById('vertical-guide');
         const horizontalGuide = document.getElementById('horizontal-guide');
 
+        let dragging = false; // To know if a box is being dragged
+        let draggedBox = null; // Reference to the box being dragged
+        let offsetX = 0; // To store the initial X offset
+        let offsetY = 0; // To store the initial Y offset
+
+
         container.addEventListener('mousemove', function (event) {
             const rect = container.getBoundingClientRect();
             const xPos = event.clientX - rect.left;
@@ -206,10 +212,33 @@
             horizontalGuide.style.display = 'block';
         });
 
+        container.addEventListener('mousemove', function(event) {
+            if (!dragging || !draggedBox) return;
+
+            const containerRect = container.getBoundingClientRect();
+            const newX = (event.clientX - containerRect.left) - offsetX;
+            const newY = (event.clientY - containerRect.top) - offsetY;
+            
+            draggedBox.x = newX / image.width;
+            draggedBox.y = newY / image.height;
+
+            updateAnnotations();
+        });
+
         container.addEventListener('mouseleave', function () {
             verticalGuide.style.display = 'none';
             horizontalGuide.style.display = 'none';
         });
+
+        image.addEventListener('mouseup', function(event) {
+            if (dragging) {
+                dragging = false;
+                draggedBox = null;
+                updateList();
+            }
+        });
+
+
 
 
         saveButton.addEventListener('click', updateDatabase)
@@ -333,6 +362,23 @@
 
         annotation.addEventListener('click', function () {
             annotation.classList.toggle('selected');
+        });
+
+        annotation.addEventListener('mousedown', function(event) {
+            dragging = true;
+            draggedBox = box;
+            const rect = annotation.getBoundingClientRect();
+            offsetX = event.clientX - rect.left;
+            offsetY = event.clientY - rect.top;
+            annotation.classList.add('dragging'); // To possibly style it differently while dragging
+        });
+
+        annotation.addEventListener('mouseup', function(event) {
+            if (dragging) {
+                dragging = false;
+                draggedBox = null;
+                updateList();
+            }
         });
 
         annotation.style.left = `${box.x * image.width}px`;
