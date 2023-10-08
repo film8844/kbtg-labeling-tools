@@ -26,6 +26,7 @@ class Project(db.Model):
     name = db.Column(db.String(20), unique=False, nullable=False)
     type = db.Column(db.String(120), unique=False, nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    labels_info = db.Column(JSON, nullable=False)
 
     def list(self):
         return (self.id, self.name, self.username, self.type)

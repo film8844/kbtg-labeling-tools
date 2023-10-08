@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Image Annotation Tool</title>
+    <style>
+        #image-container {
+            position: relative;
+        }
+        #image-container :hover {
+            cursor: crosshair ;
+        }
+
+        #image {
+            max-width: 100%;
+        }
+        #image :hover{
+            cursor: crosshair ;
+        }
+
+        .annotation {
+            position: absolute;
+            border: 2px solid red;
+            background-color: rgba(255, 0, 0, 0.2);
+        }
+        .annotation :hover{
+            cursor: pointer !important;
+        }
+
+        .annotation.selected {
+            border: 2px dashed gray;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Image Annotation Tool</h1>
+    <div id="image-container">
+        <img id="image" draggable="false"
+            src="https://imageio.forbes.com/specials-images/imageserve/5d35eacaf1176b0008974b54/0x0.jpg?format=jpg&crop=4560,2565,x790,y784,safe&width=1200"
+            alt="Image for annotation">
+    </div>
+    <select id="color-picker">
+        <option value="red">Red</option>
+        <option value="green">Green</option>
+        <option value="blue">Blue</option>
+        <option value="yellow">Yellow</option>
+        <option value="purple">Purple</option>
+    </select>
+    <div id="zoom-controls">
+        <button id="zoom-in">Zoom In</button>
+        <button id="zoom-out">Zoom Out</button>
+        <span>Zoom Level: <span id="zoom-level">100</span>%</span>
+    </div>
+    <button id="delete-button">Delete Selected</button>
+    <div id="annotation-list">
+        <h2>Annotation List</h2>
+        <ul id="list">
+        </ul>
+    </div>
+
+    <script src="drowing.js"></script>
+
+</body>
+
+</html>

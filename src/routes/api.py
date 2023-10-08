@@ -3,6 +3,7 @@ from models import User, Project ,Task,serialize
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from random import randint
 from app import db
+import shutil
 router = Blueprint('api', __name__)
 
 @router.route('/api/projects', methods=['GET'])
@@ -24,6 +25,8 @@ def projects():
 @router.route('/api/projects/<id>', methods=['GET'])
 def project(int: id):
     query = Project.query.filter_by(id=id).first()
+    if query is None:
+        return "error", 404
     Task = Task.query.filter_by(project_id = id).all()
     projects = []
     for i in query:
@@ -31,15 +34,18 @@ def project(int: id):
         projects.append(i)
     return jsonify(projects[::-1])
 
-@router.route('/api/projects/<id>/del', methods=['POST'])
-def delete(int: id):
-    query = Project.query.filter_by(id=id).first()
-    images = Image.query.filter_by(project_id = id).all()
+@router.route('/api/projects/<id>/del', methods=['DELETE'])
+def delete(id):
+    query = Project.query.filter_by(id=int(id)).first()
+    images = Task.query.filter_by(project_id = id).all()
     projects = []
-    for i in query:
-        i['progress'] = randint(0,100)
-        projects.append(i)
-    return jsonify(projects[::-1])
+    for i in images:
+        db.session.delete(i)
+    db.session.commit()
+    shutil.rmtree(f"static/images/{id}")
+    db.session.delete(query)
+    db.session.commit()
+    return jsonify(projects)
 
 @router.route('/api/task/<id>', methods=['POST'])
 def update_task(id):

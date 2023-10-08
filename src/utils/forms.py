@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, SubmitField, SelectField,TextAreaField
 from wtforms.validators import DataRequired, Email
 
 class LoginForm(FlaskForm):
@@ -16,6 +16,7 @@ class RegistrationForm(FlaskForm):
 
 class ProjectForm(FlaskForm):
     name = StringField('name', validators=[DataRequired()])
-    type = SelectField('type',choices = [('class', 'Classification'), ('det', 'Detection'), ('seg', 'Segmentation')], validators=[DataRequired()])
+    type = SelectField('type',choices = [ ('det', 'Detection'),('class', 'Classification')], validators=[DataRequired()])
+    labels = TextAreaField('labels',validators=[DataRequired()])
 
 

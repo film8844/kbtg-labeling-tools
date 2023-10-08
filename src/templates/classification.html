@@ -41,10 +41,6 @@
         background-color: #fff;
     }
 
-    #image-container :hover {
-        cursor: crosshair;
-    }
-
     #zoom-controls {
         height: 100%;
         /* overflow: auto; */
@@ -122,8 +118,11 @@
                     <div class="card-body">
                         <h5 class="card-title">Label</h5>
                         <select id="color-picker" class="form-select form-select-lg mb-3" >
+                            
+                            <option value="" {% if task.label == []%} selected {% endif %}>Select label</option>
+                            
                             {% for label in project.labels_info['classname'] %}
-                            <option value="{{loop.index}}">{{label}}</option>
+                            <option value="{{loop.index}}" style="background-color: green" {% if task.label.classname == label %} selected {% endif %}>{{label}}</option>
                             {% endfor %}
                         </select>
                         <h5 class="card-title">Zoom Level: <span id="zoom-level">100</span>%</h5>
@@ -132,8 +131,8 @@
                             <button id="zoom-out" class="btn btn-primary"><i class="bi bi-zoom-out"></i></button>
                                 
                         </div>
-                        <button id="delete-button" class="btn btn-danger mb-2">Delete</button>
-                        <button id="reset-button" class="btn btn-danger mb-2">Reset</button>
+                        <button id="delete-button" class="btn btn-danger">Delete</button>
+                        <button id="reset-button" class="btn btn-danger">Reset</button>
                     </div>
                 </div>
 
@@ -162,8 +161,8 @@
         </div>
         <div class="col-10">
             <div id="image-container">
-                <div id="vertical-guide"></div>
-                <div id="horizontal-guide"></div>
+                <!-- <div id="vertical-guide"></div>
+                <div id="horizontal-guide"></div> -->
                 <div id="zoom-controls">
                     <div id="annotation-list"></div>
                     <img id="image" draggable="false" src="../{{task.path}}" alt="Image for annotation">
@@ -218,7 +217,7 @@
         const zoomOutButton = document.getElementById('zoom-out');
         const zoomLevelSpan = document.getElementById('zoom-level');
         const deleteButton = document.getElementById('delete-button');
-        const colorPicker = document.getElementById('color-picker');
+        const labellist = document.getElementById('color-picker');
         const saveButton = document.getElementById('save-button');
         const submitButton = document.getElementById('submit-button');
         const resetButton = document.getElementById('reset-button');
@@ -229,51 +228,11 @@
         let drawing = false;
         let start_x = 0;
         let start_y = 0;
-        let boxes = [];
-        let firstBox = [];
+
+        let label = [];
+        let firstlabel = [];
 
         let undoStack = [];
-
-        const verticalGuide = document.getElementById('vertical-guide');
-        const horizontalGuide = document.getElementById('horizontal-guide');
-
-        let dragging = false; // To know if a box is being dragged
-        let draggedBox = null; // Reference to the box being dragged
-        let offsetX = 0; // To store the initial X offset
-        let offsetY = 0; // To store the initial Y offset
-
-
-        container.addEventListener('mousemove', function (event) {
-            const rect = container.getBoundingClientRect();
-            const xPos = event.clientX - rect.left;
-            const yPos = event.clientY - rect.top;
-
-            verticalGuide.style.left = xPos + 'px';
-            horizontalGuide.style.top = yPos + 'px';
-            verticalGuide.style.display = 'block';
-            horizontalGuide.style.display = 'block';
-        });
-
-        container.addEventListener('mousemove', function (event) {
-            if (!dragging || !draggedBox) return;
-
-            const containerRect = container.getBoundingClientRect();
-            const newX = (event.clientX - containerRect.left) - offsetX;
-            const newY = (event.clientY - containerRect.top) - offsetY;
-
-            draggedBox.x = newX / image.width;
-            draggedBox.y = newY / image.height;
-
-            updateAnnotations();
-        });
-
-        container.addEventListener('mouseleave', function () {
-            verticalGuide.style.display = 'none';
-            horizontalGuide.style.display = 'none';
-        });
-
-
-
 
         saveButton.addEventListener('click', updateDatabase)
         submitButton.addEventListener('click', submitTask)
@@ -288,16 +247,25 @@
                     return response.json();
                 })
                 .then(data => {
-                    boxes = [...data]; // Assign fetched boxes to the boxes array
-                    firstBox = [...data]
-                    updateAnnotations();
-                    updateList();
-
+                    label = data; // Assign fetched boxes to the boxes array
+                    firstlabel = data
+                    updateList()
                 })
                 .catch(error => {
                     console.error('Failed fetching boxes:', error);
                 });
+        }
 
+        labellist.onchange = function () {
+            if (this.value == 0) {
+                data = []
+            } else {
+                data = {"color":colors[this.value-1],"classname":classesname[this.value-1]}
+            }
+            label = data
+            updateList()
+            console.log(label);
+            console.log(firstlabel);
         }
 
         // Assuming you have the imageId somewhere, you can call this function
@@ -309,12 +277,12 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}})
+                body: JSON.stringify({ "label": label, "label_by": {{ current_user.id }}})
             })
 
-            firstBox = [...boxes]
+            firstlabel = label
             updateList()
-            console.log({ "label": boxes, "label_by": {{ current_user.id }}})
+            console.log({ "label": label, "label_by": {{ current_user.id }}})
     }
 
     async function submitTask() {
@@ -323,50 +291,21 @@
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}, "finished": true}),
+            body: JSON.stringify({ "label": label, "label_by": {{ current_user.id }}, "finished": true}),
         })
-    firstBox = [...boxes]
-    console.log({ "label": boxes, "label_by": {{ current_user.id }}, "finished": true})
+    firstlabel = [...label]
+    console.log({ "label": label, "label_by": {{ current_user.id }}, "finished": true})
     }
 
-    function updateAnnotations() {
-
-        const existingAnnotations = document.querySelectorAll('.annotation');
-        existingAnnotations.forEach((annotation) => {
-            annotation.remove();
-        });
-
-        boxes.forEach((box, index) => createAnnotation(box, index));
-    }
-
-    function arraysHaveSameContent(arr1, arr2) {
-        if (arr1.length !== arr2.length) return false;
-        return arr1.slice().sort().every((value, index) => value === arr2.slice().sort()[index]);
-    }
     function updateList() {
-        if (arraysHaveSameContent(boxes, firstBox)) {
+        if (label === firstlabel) {
             saveButton.classList.add('disabled');
             // console.log(saveButton.classList)
-            console.log('disabled')
-            console.log(`box`);
-            console.log(boxes);
-            console.log(`firstBox`);
-            console.log(firstBox);
         } else {
             saveButton.classList.remove('disabled');
-            console.log('show')
-            console.log(`box`);
-            console.log(boxes);
-            console.log(`firstBox`);
-            console.log(firstBox);
+
         }
         annotationList.innerHTML = '';
-        boxes.forEach((box, index) => {
-            const listItem = document.createElement('li');
-            listItem.style.color = colors[box.classname]
-            listItem.textContent = `${classesname[box.classname]}: x=${(box.x).toFixed(2)}, y=${(box.y).toFixed(2)}, width=${(box.width).toFixed(2)}, height=${box.height.toFixed(2)}, class=${box.classname}`;
-            annotationList.appendChild(listItem);
-        });
     }
 
     function adjustZoom(factor) {

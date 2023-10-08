@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, flash, url_for, jsonify
+from pydoc import classname
+from flask import Blueprint, render_template,abort, request, redirect, flash, url_for, jsonify
 from werkzeug.utils import secure_filename
 from models import User, Project, Task
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
@@ -6,8 +7,14 @@ from utils.forms import ProjectForm
 from app import db, UPLOAD_FOLDER
 import os
 from PIL import Image
+from utils.colors import generate_colors
 
 router = Blueprint('main', __name__)
+
+@router.errorhandler(404)
+def page_not_found(e):
+    # note that we set the 404 status explicitly
+    return render_template('pages-error-404.html'), 404
 
 @router.route('/')
 @login_required
@@ -19,6 +26,9 @@ def home():
 @login_required
 def project(id):
     project = Project.query.filter_by(id=id).first()
+    # If no project is found for the given ID, abort with a 404 error.
+    if project is None:
+        abort(404)
     tasks = Task.query.filter_by(project_id = id).all()
     return render_template('annotation.html', project=project,tasks=tasks)
 
@@ -27,7 +37,22 @@ def project(id):
 def project_task(id):
     task = Task.query.filter_by(id=id).first()
     project = Project.query.filter_by(id = task.project_id).first()
-    return render_template('object_detection.html', project=project, task=task)
+    start = False
+    end = False
+    all_tasks = Task.query.filter_by(project_id = project.id).all()
+    all_tasks = sorted([i.to_dict()['id'] for i in all_tasks])
+    print(all_tasks)
+    print(id,all_tasks[0],all_tasks[-1])
+    if int(id) == all_tasks[0]:
+        start = True
+    if int(id) == all_tasks[-1]:
+        end = True
+    print(start,end)
+
+    if project.type == 'det':
+        return render_template('object_detection.html', project=project, task=task, start=start,end=end)
+    elif project.type == 'class':
+        return render_template('classification.html', project=project, task=task, start=start,end=end)
 
 @router.route('/create_project', methods=['GET', 'POST'])
 @login_required
@@ -38,8 +63,18 @@ def create_project():
     if form.validate_on_submit():
         # return form.username.data+" "+form.password.data
         # Perform a query to find the user
-        try:  
-            new_project = Project(name=form.name.data, type=form.type.data, creator_id=user_id)
+        try:
+            classes = form.labels.data
+            classes = [number.strip() for number in classes.split('\n') if number.strip() != '']
+            # return classes
+            colors = generate_colors(len(classes))
+            labels_info = {
+                "classname":classes, 
+                "colors":colors
+            }
+            # print(labels_info)
+            # return jsonify(labels_info)
+            new_project = Project(name=form.name.data, type=form.type.data, creator_id=user_id,labels_info=labels_info)
             db.session.add(new_project)
             db.session.commit()
             flash('New project has been created.', 'success')

@@ -2,7 +2,7 @@
 
 {% block css %}
 {{ dropzone.load_css() }}
-{{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 400px;') }}
+{{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 400px;border-radius: 25px;') }}
 {% endblock %}
 
 {% block content %}
@@ -36,6 +36,8 @@
     {% endwith %}
 
     {{ dropzone.create(action=url_for('main.upload_file',project_id=project.id)) }}
+    <div class="text-center "><a class="btn btn-primary btn-lg" href="{{url_for('main.project',id=project.id)}}">Back to Project</a></div>
+    
 
 
 
