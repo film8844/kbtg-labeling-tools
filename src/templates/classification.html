@@ -122,7 +122,7 @@
                             <option value="" {% if task.label == []%} selected {% endif %}>Select label</option>
                             
                             {% for label in project.labels_info['classname'] %}
-                            <option value="{{loop.index}}" style="background-color: green" {% if task.label.classname == label %} selected {% endif %}>{{label}}</option>
+                            <option value="{{loop.index}}" {% if task.label.classname == label %} selected {% endif %}>{{label}}</option>
                             {% endfor %}
                         </select>
                         <h5 class="card-title">Zoom Level: <span id="zoom-level">100</span>%</h5>
@@ -293,7 +293,7 @@
             },
             body: JSON.stringify({ "label": label, "label_by": {{ current_user.id }}, "finished": true}),
         })
-    firstlabel = [...label]
+    firstlabel = label
     console.log({ "label": label, "label_by": {{ current_user.id }}, "finished": true})
     }
 

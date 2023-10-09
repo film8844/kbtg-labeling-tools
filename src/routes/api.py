@@ -1,9 +1,13 @@
-from flask import Blueprint, jsonify,request
+from flask import Blueprint, jsonify,request,send_from_directory
 from models import User, Project ,Task,serialize
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from random import randint
 from app import db
 import shutil
+import glob
+import os
+from utils.export import write_to_yolo_format,create_classes_txt
+import zipfile
 router = Blueprint('api', __name__)
 
 @router.route('/api/projects', methods=['GET'])
@@ -46,6 +50,41 @@ def delete(id):
     db.session.delete(query)
     db.session.commit()
     return jsonify(projects)
+
+@router.route('/api/projects/<id>/export', methods=['POST'])
+def export(id):
+    data = request.form
+    format = data['format']
+    query = Project.query.filter_by(id=int(id)).first()
+    if query is None:
+        return "error", 404
+    images = Task.query.filter_by(project_id = id).all()
+    images = [image.to_dict() for image in images]
+
+    os.makedirs('tmp',exist_ok=True)
+    os.makedirs('tmp/images',exist_ok=True)
+    os.makedirs('tmp/annotation',exist_ok=True)
+
+    if format == "yolo":
+        for image in images:
+            shutil.copy(os.path.join(image['path']), 'tmp/images')
+            name = os.path.basename(os.path.join(image['path'])).split('.')[0]
+            write_to_yolo_format(image['label'],f'tmp/annotation/{name}.txt')
+        create_classes_txt(query.labels_info['classname'],'tmp/classes.txt')
+    else:
+        return {"status": "error"}
+    
+    os.makedirs('export_file',exist_ok=True)
+    zipname = f"{format}-{query.name.replace(' ','_')}.zip"
+    with zipfile.ZipFile(os.path.join('export_file',zipname), 'w') as zipf:
+        for foldername, subfolders, filenames in os.walk('tmp'):
+            for filename in filenames:
+                file_path = os.path.join(foldername, filename)
+                zipf.write(file_path, os.path.relpath(file_path, 'tmp'))
+
+    shutil.rmtree('tmp')
+
+    return send_from_directory(directory='export_file',path=zipname, as_attachment=True)
 
 @router.route('/api/task/<id>', methods=['POST'])
 def update_task(id):

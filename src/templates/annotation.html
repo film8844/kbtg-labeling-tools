@@ -15,6 +15,8 @@
         </nav>
     </div><!-- End Page Title -->
     <div>
+        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#export-model"><i
+                class="ri-file-download-fill"></i> Export</button>
         <a href="{{url_for('main.project_upload',id=project.id)}}" class="btn btn-warning">
             <i class="bx bx-upload"></i> Upload Data</a>
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-model"><i
@@ -49,16 +51,19 @@
                             <th scope="col">Preview</th>
                             <th scope="col">Path</th>
                             <th scope="col">Status</th>
-                            <th scope="col">{% if project.type == 'det'%}Boxes{% elif project.type=='class' %}Label{% endif %}</th>
+                            <th scope="col">{% if project.type == 'det'%}Boxes{% elif project.type=='class' %}Label{%
+                                endif %}</th>
                             <th scope="col">By</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for task in tasks %}
-                        
+
                         <tr>
-                            
-                            <th scope="row"><a href="{{ url_for('main.project_task',id=task.id) }}"><img class=" rounded"  src="../{{ task.path }}" width="75" height="75" alt="{{task.path}}"></a></th>
+
+                            <th scope="row"><a href="{{ url_for('main.project_task',id=task.id) }}"><img
+                                        class=" rounded" src="../{{ task.path }}" width="75" height="75"
+                                        alt="{{task.path}}"></a></th>
                             <td><a href="{{ url_for('main.project_task',id=task.id) }}">{{task.path}}</a></td>
                             <td>{% if task.finished %}
                                 <span class="badge bg-success">Completed</span>
@@ -68,17 +73,22 @@
                                 <span class="badge bg-secondary-light">Not Started</span>
                                 {% endif %}
                             </td>
-                            <td class=" fw-bold">{% if project.type == 'det'%}{{task.label|length}}{% elif project.type=='class' %}<span class="badge bg-secondary-light" style="background-color:{{task.label['color']}}">{{task.label['classname']}}</span>{% endif %}</td>
+                            <td class="h5 fw-bold">{% if project.type == 'det'%}{{task.label|length}}{% elif
+                                project.type=='class' %}<span class="badge rounded-pill bg-secondary-light"
+                                    style="background-color:{{task.label['color']}}">{{task.label['classname']}}</span>{%
+                                endif %}</td>
                             <td>
                                 {% if task.label_by %}
-                                <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                                    <img src="{{ url_for('auth.profile_img', id=task.label_by) }}" width="30" height="30" alt="Profile" class="rounded-circle">
-            
+                                <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#"
+                                    data-bs-toggle="dropdown">
+                                    <img src="{{ url_for('auth.profile_img', id=task.label_by) }}" width="30"
+                                        height="30" alt="Profile" class="rounded-circle">
+
                                 </a>
                                 {% endif %}
                             </td>
-                                
-                        
+
+
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -107,7 +117,7 @@
 
 
 </section>
-<!-- End Vertically centered Modal -->
+<!-- Delete Modal -->
 <div class="modal fade" id="delete-model" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -130,19 +140,58 @@
 </div><!-- End Basic Modal-->
 <!-- End Vertically centered Modal  -->
 
+
+<!-- Export Modal -->
+<div class="modal fade" id="export-model" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Format</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{url_for('api.export',id=project.id)}}" method="post">
+                <div class="modal-body">
+                        <fieldset >
+                            <div class="col-sm-10">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="format1"
+                                        value="yolo" checked="">
+                                    <label class="form-check-label" for="gridRadios1">
+                                        YOLO
+                                    </label>
+                                </div>
+                                <div class="form-check disabled">
+                                    <input class="form-check-input" type="radio" name="format" id="format2"
+                                        value="coco" disabled="">
+                                    <label class="form-check-label" for="gridRadios3">
+                                        COCO 
+                                    </label>
+                                </div>
+                            </div>
+                        </fieldset>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Export</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div><!-- End Basic Modal-->
+<!-- End Vertically centered Modal  -->
 {% endblock %}
 
 {% block script %}
 <script>
-async function delete_project() {
-    res = await fetch('/api/projects/{{ project.id}}/del',  {
-      method: 'DELETE'
-    })
-    if (res.status === 200) {
-        console.log("ok");
-        window.location.href = "/";
+    async function delete_project() {
+        res = await fetch('/api/projects/{{ project.id}}/del', {
+            method: 'DELETE'
+        })
+        if (res.status === 200) {
+            console.log("ok");
+            window.location.href = "/";
+        }
     }
-  }
 </script>
 
 {% endblock %}
