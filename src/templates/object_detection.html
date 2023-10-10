@@ -74,6 +74,11 @@
     select option[selected]{
         background-color: '#fff'
     }
+
+    .resize-handle {
+        cursor: pointer;
+        z-index: 2;
+    }
 </style>
 {% endblock %}
 
@@ -143,8 +148,8 @@
                 <div  class="card ">
                     <div style="height: 30vh;overflow: auto;" id="annotation-list" class="card-body ">
                         <h5 class="card-title">Annotation List</h5>
-                        <ul id="list">
-                        </ul>
+                        <ol id="list">
+                        </ol>
                     </div>
                 </div>
 
@@ -222,6 +227,8 @@
         const saveButton = document.getElementById('save-button');
         const submitButton = document.getElementById('submit-button');
         const resetButton = document.getElementById('reset-button');
+        let resizing = false;
+        let currentHandle = null;
         const colors = [{% for color in project.labels_info['colors'] %}'{{color}}', {% endfor %}]
         const classesname = [{% for color in project.labels_info['classname'] %}'{{color}}', {% endfor %}]
 
@@ -364,7 +371,9 @@
         boxes.forEach((box, index) => {
             const listItem = document.createElement('li');
             listItem.style.color = colors[box.classname]
-            listItem.textContent = `${classesname[box.classname]}: x=${(box.x).toFixed(2)}, y=${(box.y).toFixed(2)}, width=${(box.width).toFixed(2)}, height=${box.height.toFixed(2)}, class=${box.classname}`;
+            const tmp = `<span class="badge rounded-pill bg-secondary-light" style="background-color:${colors[box.classname]}">${classesname[box.classname]}</span>`;
+            listItem.innerHTML = tmp
+            // listItem.textContent = `${classesname[box.classname]}: x=${(box.x).toFixed(2)}, y=${(box.y).toFixed(2)}, width=${(box.width).toFixed(2)}, height=${box.height.toFixed(2)}, class=${box.classname}`;
             annotationList.appendChild(listItem);
         });
     }
@@ -423,6 +432,26 @@
         annotation.style.width = `${box.width * image.width}px`;
         annotation.style.height = `${box.height * image.height}px`;
 
+        ['nw', 'ne', 'sw', 'se','m'].forEach(pos => {
+            const handle = document.createElement('div');
+            handle.className = `resize-handle ${pos}`;
+            handle.style.position = 'absolute';
+            if (pos.includes('n')) handle.style.top = '-4px';
+            if (pos.includes('s')) handle.style.bottom = '-4px';
+            if (pos.includes('w')) handle.style.left = '-4px';
+            if (pos.includes('e')) handle.style.right = '-4px';
+            if (pos === 'm') {
+                handle.style.top = '50%';
+                handle.style.left = '50%';
+                handle.style.transform = 'translate(-50%, -50%)';
+                handle.style.borderRadius = '50%';
+            }
+            handle.style.width = '8px';
+            handle.style.height = '8px';
+            handle.style.backgroundColor = box.borderColor;
+            annotation.appendChild(handle);
+        });
+
         container.appendChild(annotation);
     }
 
@@ -446,6 +475,8 @@
         const selectedClass = colorPicker.value - 1;
         const classname = classesname[selectedClass]
         const borderColor = colors[selectedClass];
+        const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+
     
         const box = {
             x: Math.min(start_x, end_x) / image.width,
@@ -454,7 +485,7 @@
             height: Math.abs(end_y - start_y) / image.height,
             classname: selectedClass,
             borderColor: borderColor,
-            backgroundColor: 'rgba(128,128,128,0.2)'
+            backgroundColor: borderColor+'40'
         };
         if (box.height == 0 || box.width == 0) return;
 
@@ -500,10 +531,70 @@
         updateList();
     })
 
+    container.addEventListener('mousedown', function (event) {
+        const handle = event.target.closest('.resize-handle');
+        if (handle) {
+            resizing = true;
+            currentHandle = handle;
+            console.log(currentHandle);
+        }
+    });
+    
+    document.addEventListener('mouseup', function () {
+        resizing = false;
+        currentHandle = null;
+    });
+
+    container.addEventListener('mousemove', function (event) {
+        if (!resizing || !currentHandle) return;
+        const rect = image.getBoundingClientRect();
+        const x = (event.clientX - rect.left)/image.width;
+        const y = (event.clientY - rect.top)/image.height;
+        const box = boxes[parseInt(currentHandle.parentElement.dataset.index)];
+        const canses = currentHandle.className.split(' ')[1]
+    
+        switch (canses) {
+            case 'nw':
+                box.width += (box.x - x);
+                box.height += (box.y - y);
+                box.x = x;
+                box.y = y;
+                break;
+            case 'ne':
+                box.width = x - box.x;
+                box.height += box.y - y;
+                box.y = y;
+                break;
+            case 'sw':
+                box.width += box.x - x;
+                box.height = y - box.y;
+                box.x = x;
+                break;
+            case 'se':
+                box.width = x - box.x;
+                box.height = y - box.y;
+                break;
+            case 'm':
+                const deltaX = (x - (box.x + box.width/2));
+                const deltaY = (y - (box.y + box.height/2));
+                box.x += deltaX;
+                box.y += deltaY;
+        }
+    
+        updateAnnotations();
+        updateList();
+    });
+
     // Listen for keyboard shortcuts for undo (Ctrl+Z) and redo (Ctrl+Shift+Z)
     document.addEventListener('keydown', function (event) {
 
+        if (!isNaN(event.key) && event.key >= 1 && event.key <= colorPicker.options.length) {
+        colorPicker.value = event.key;
         
+        // Trigger the change event if there's an event listener for it
+        const changeEvent = new Event('change');
+        colorPicker.dispatchEvent(changeEvent);
+        }
 
         if (event.key === 'Backspace') {
             // Perform deletion here
