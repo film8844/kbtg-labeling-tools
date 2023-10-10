@@ -151,24 +151,45 @@
             </div>
             <form action="{{url_for('api.export',id=project.id)}}" method="post">
                 <div class="modal-body">
+                    {%if project.type == 'det'%}
                         <fieldset >
                             <div class="col-sm-10">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="format" id="format1"
                                         value="yolo" checked="">
-                                    <label class="form-check-label" for="gridRadios1">
+                                    <label class="form-check-label" for="format1">
                                         YOLO
                                     </label>
                                 </div>
                                 <div class="form-check disabled">
                                     <input class="form-check-input" type="radio" name="format" id="format2"
                                         value="coco" disabled="">
-                                    <label class="form-check-label" for="gridRadios3">
+                                    <label class="form-check-label" for="format2">
                                         COCO 
                                     </label>
                                 </div>
                             </div>
                         </fieldset>
+                    {% elif project.type == 'class' %}
+                    <fieldset >
+                        <div class="col-sm-10">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="format" id="format1"
+                                    value="file" checked="">
+                                <label class="form-check-label" for="format1">
+                                    file structure
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="format" id="format2"
+                                    value="csv">
+                                <label class="form-check-label" for="format2">
+                                    CSV
+                                </label>
+                            </div>
+                        </div>
+                    </fieldset>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

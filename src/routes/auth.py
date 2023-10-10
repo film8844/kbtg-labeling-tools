@@ -46,6 +46,12 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('main.home'))
 
+@router.route('/profile')
+@login_required
+def profile():
+
+    return render_template('profile.html')
+
 @router.route('/profile/<id>')
 def profile_img(id):
     user = User.query.filter(User.id ==id).first()

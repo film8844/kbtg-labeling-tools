@@ -8,6 +8,7 @@ import glob
 import os
 from utils.export import write_to_yolo_format,create_classes_txt
 import zipfile
+import pandas as pd
 router = Blueprint('api', __name__)
 
 @router.route('/api/projects', methods=['GET'])
@@ -62,17 +63,28 @@ def export(id):
     images = [image.to_dict() for image in images]
 
     os.makedirs('tmp',exist_ok=True)
-    os.makedirs('tmp/images',exist_ok=True)
-    os.makedirs('tmp/annotation',exist_ok=True)
+    
 
     if format == "yolo":
+        os.makedirs('tmp/images',exist_ok=True)
+        os.makedirs('tmp/annotation',exist_ok=True)
         for image in images:
             shutil.copy(os.path.join(image['path']), 'tmp/images')
             name = os.path.basename(os.path.join(image['path'])).split('.')[0]
             write_to_yolo_format(image['label'],f'tmp/annotation/{name}.txt')
         create_classes_txt(query.labels_info['classname'],'tmp/classes.txt')
+    elif format == "file":
+        for c in query.labels_info['classname']:
+            os.makedirs( f"tmp/{c}",exist_ok=True)
+        for image in images:
+            shutil.copy(os.path.join(image['path']), f"tmp/{image['label']['classname']}")
+    elif format == "csv":
+        pass
+        data = pd.json_normalize(images).to_csv(f"export_file/{query.name.replace(' ','_')}.csv")
+        print(data)
+        return send_from_directory(directory='export_file',path=f"{query.name.replace(' ','_')}.csv", as_attachment=True)
     else:
-        return {"status": "error"}
+        return {"status": format}
     
     os.makedirs('export_file',exist_ok=True)
     zipname = f"{format}-{query.name.replace(' ','_')}.zip"

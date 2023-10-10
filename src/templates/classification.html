@@ -141,9 +141,10 @@
 
                 <div  class="card ">
                     <div style="height: 30vh;overflow: auto;" id="annotation-list" class="card-body ">
-                        <h5 class="card-title">Annotation List</h5>
-                        <ul id="list">
-                        </ul>
+                        <h5 class="card-title">Annotation</h5>
+                        <div class="h3" id="list">
+                            
+                        </div>
                     </div>
                 </div>
 
@@ -305,7 +306,10 @@
             saveButton.classList.remove('disabled');
 
         }
-        annotationList.innerHTML = '';
+        const tmp = `<span class="badge rounded-pill bg-secondary-light" style="background-color:${label.color}">${label.classname}</span>`;
+        annotationList.innerHTML = tmp
+        console.log(annotationList.innerHTML);
+        
     }
 
     function adjustZoom(factor) {
@@ -467,6 +471,17 @@
         if (event.ctrlKey && event.key === 's') {
             // console.log('save');
             updateDatabase()
+        }
+
+        if (event.ctrlKey && event.key === ']') {
+            // console.log('save');
+            {% if not end %} window.location.href = "{{url_for('main.project_task',id=task.id+1)}}"; {% endif %}
+            
+        }
+        if (event.ctrlKey && event.key === '[') {
+            // console.log('save');
+            {% if not start %} window.location.href = "{{url_for('main.project_task',id=task.id-1)}}"; {% endif %}
+            
         }
         // Check if Ctrl+Z is pressed
         if (event.ctrlKey && event.key === 'z') {
