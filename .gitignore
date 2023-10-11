@@ -161,5 +161,4 @@ cython_debug/
 
 src/database.db
 src/static/images/*
-
 src/export_file
