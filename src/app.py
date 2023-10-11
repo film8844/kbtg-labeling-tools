@@ -25,6 +25,7 @@ def create_app(config_class=Config):
     # app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or \
     #                                         'sqlite:///' + os.path.join(basedir, 'database.db')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') 
+    print(os.environ.get('DATABASE_URL'))
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'

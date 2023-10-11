@@ -17,3 +17,5 @@ Werkzeug==2.3.7
 WTForms==3.0.1
 flask-dropzone
 pillow
+psycopg2-binary
+pandas
