@@ -446,7 +446,13 @@
     // Listen for keyboard shortcuts for undo (Ctrl+Z) and redo (Ctrl+Shift+Z)
     document.addEventListener('keydown', function (event) {
 
+        if (!isNaN(event.key) && event.key >= 1 && event.key <= labellist.options.length) {
+            labellist.value = event.key;
         
+        // Trigger the change event if there's an event listener for it
+        const changeEvent = new Event('change');
+        labellist.dispatchEvent(changeEvent);
+        }
 
         if (event.key === 'Backspace') {
             // Perform deletion here

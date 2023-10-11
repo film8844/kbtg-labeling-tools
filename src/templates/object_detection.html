@@ -408,24 +408,8 @@
 
         annotation.addEventListener('click', function () {
             annotation.classList.toggle('selected');
-            // dragging = true;
-            // draggedBox = box;
         });
 
-        // annotation.addEventListener('mousedown', function (event) {
-        //     const rect = annotation.getBoundingClientRect();
-        //     offsetX = event.clientX - rect.left;
-        //     offsetY = event.clientY - rect.top;
-        //     annotation.classList.add('dragging'); // To possibly style it differently while dragging
-        // });
-
-        // annotation.addEventListener('mouseup', function (event) {
-        //     if (dragging) {
-        //         dragging = false;
-        //         draggedBox = null;
-        //         updateList();
-        //     }
-        // });
 
         annotation.style.left = `${box.x * image.width}px`;
         annotation.style.top = `${box.y * image.height}px`;
@@ -440,15 +424,18 @@
             if (pos.includes('s')) handle.style.bottom = '-4px';
             if (pos.includes('w')) handle.style.left = '-4px';
             if (pos.includes('e')) handle.style.right = '-4px';
-            if (pos === 'm') {
-                handle.style.top = '50%';
-                handle.style.left = '50%';
-                handle.style.transform = 'translate(-50%, -50%)';
-                handle.style.borderRadius = '50%';
-            }
             handle.style.width = '8px';
             handle.style.height = '8px';
             handle.style.backgroundColor = box.borderColor;
+            if (pos === 'm') {
+                handle.style.top = '50%';
+                handle.style.left = '50%';
+                handle.style.width = '16px';
+                handle.style.height = '16px';
+                handle.style.transform = 'translate(-50%, -50%)';
+                handle.style.borderRadius = '50%';
+            }
+            
             annotation.appendChild(handle);
         });
 
@@ -594,6 +581,13 @@
         // Trigger the change event if there's an event listener for it
         const changeEvent = new Event('change');
         colorPicker.dispatchEvent(changeEvent);
+        }
+
+        // Check if Ctrl+Enter is pressed
+        if (event.ctrlKey && event.key === 'Enter') {
+            // Call the desired function or action here
+            submitTask()
+
         }
 
         if (event.key === 'Backspace') {
