@@ -1,22 +1,22 @@
-# kbtg-labeling-tools
+# 🔧 **kbtg-labeling-tools** 🔧
 
-# installation
-1.Clone this repository
+## 📦 Installation
+1. 🔄 Clone this repository
 ```bash
 git clone https://github.com/film8844/kbtg-labeling-tools.git
 ```
-2.Create `.env` file. copy from `.docker.env`
+2. 📄 Create `.env` file. copy from `.docker.env`
 
-## run on local for development
-1. start database with docker
+## 🛠 Run on Local (for Development)
+1. 🚀 Start database with docker
 ```bash
 docker-compose -f docker-compos.database.yml up -d
 ```
-2. install packages
+2. 📦 Install packages
 ```bash
 pip install -r requirements.txt
 ```
-3. run service
+3. 🏃 Run service
 ```bash
 # don't forget to copy .env.template to .env and change your env
 
@@ -25,7 +25,7 @@ cd src
 export $(cat ../.env)
 python run.py
 ```
-## run on docker for production
+## 🐳 Run on Docker (for Production)
 ```bash
 docker compose up -d --build
 ```
