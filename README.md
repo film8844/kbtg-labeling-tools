@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ```
 3. 🏃 Run service
 ```bash
-# don't forget to copy .env.template to .env and change your env
+# don't forget to copy .docker.env to .env and change your env
 
 # run
 cd src
