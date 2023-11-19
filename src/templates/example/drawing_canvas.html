@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Image Annotation Tool</title>
+    <style>
+        #myCanvas {
+            border: 1px solid black;
+        }
+
+        .control-btn {
+            margin: 5px;
+        }
+
+        #modeDisplay {
+            margin: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #divCanvas {
+            width: 90vw;
+            height: 90vh;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="modeDisplay">Mode: Create Box Mode</div>
+    <div id="divCanvas">
+        <canvas id="myCanvas"></canvas>
+    </div>
+
+    <div>
+        <button id="createBoxModeBtn" class="control-btn">Create Box Mode</button>
+        <button id="zoomDragModeBtn" class="control-btn">Zoom & Drag Mode</button>
+        <button id="zoomInBtn" class="control-btn">Zoom In</button>
+        <button id="zoomOutBtn" class="control-btn">Zoom Out</button>
+        <button id="resetBtn" class="control-btn">Reset</button>
+    </div>
+
+    <script>
+        let canvas = document.getElementById('myCanvas');
+        let ctx = canvas.getContext('2d');
+        let image = new Image();
+        image.src = 'https://imageio.forbes.com/specials-images/imageserve/5d35eacaf1176b0008974b54/0x0.jpg?format=jpg&crop=4560,2565,x790,y784,safe&width=1200';
+        let scale, imageX, imageY;
+        let minScale = 1
+        const scaleMultiplier = 0.8;
+        let startDragOffset = {};
+        let mouseDown = false;
+        let mode = 'createBox';
+        let boxes = [];
+        let currentBox = null;
+        let dragged = false;
+
+        let modeDisplay = document.getElementById('modeDisplay');
+
+        function setMode(newMode) {
+            mode = newMode;
+            modeDisplay.textContent = `Mode: ${mode === 'createBox' ? 'Create Box Mode' : 'Zoom & Drag Mode'}`;
+        }
+
+        image.onload = function () {
+            let divCanvas = document.getElementById('divCanvas');
+            scale = Math.min(divCanvas.clientWidth / image.width, divCanvas.clientHeight / image.height);
+            canvas.width = image.width * scale;
+            canvas.height = image.height * scale;
+            imageX = 0;
+            imageY = 0;
+            redraw();
+        };
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, imageX, imageY, image.width * scale, image.height * scale);
+            boxes.forEach(box => drawBox(box));
+            if (currentBox) {
+                drawBox(currentBox);
+            }
+        }
+
+        function drawBox(box) {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(box.startX * scale + imageX, box.startY * scale + imageY, box.width * scale, box.height * scale);
+        }
+
+        function isWithinImageBounds(x, y) {
+            return x >= imageX && x <= imageX + image.width * scale &&
+                y >= imageY && y <= imageY + image.height * scale;
+        }
+
+        canvas.addEventListener('mousedown', function (e) {
+            mouseDown = true;
+            startDragOffset.x = e.clientX - canvas.offsetLeft;
+            startDragOffset.y = e.clientY - canvas.offsetTop;
+
+            if (mode === 'createBox') {
+                let rect = canvas.getBoundingClientRect();
+                if (isWithinImageBounds(e.clientX - rect.left, e.clientY - rect.top)) {
+                    currentBox = {
+                        startX: (e.clientX - rect.left - imageX) / scale,
+                        startY: (e.clientY - rect.top - imageY) / scale,
+                        width: 0,
+                        height: 0
+                    };
+                }
+            }
+        });
+
+
+        canvas.addEventListener('mousemove', function (e) {
+            if (mouseDown) {
+                if (mode === 'createBox' && currentBox) {
+                    let rect = canvas.getBoundingClientRect();
+                    let endX = (e.clientX - rect.left - imageX) / scale;
+                    let endY = (e.clientY - rect.top - imageY) / scale;
+
+                    currentBox.width = Math.min(endX, image.width) - currentBox.startX;
+                    currentBox.height = Math.min(endY, image.height) - currentBox.startY;
+                    redraw();
+                } else if (mode === 'zoomDrag') {
+                    dragged = true;
+                    imageX += e.clientX - startDragOffset.x;
+                    imageY += e.clientY - startDragOffset.y;
+                    startDragOffset.x = e.clientX;
+                    startDragOffset.y = e.clientY;
+                    redraw();
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', function (e) {
+            if (mode === 'createBox' && currentBox && !dragged) {
+                let rect = canvas.getBoundingClientRect();
+                if (isWithinImageBounds(e.clientX - rect.left, e.clientY - rect.top)) {
+                    boxes.push(currentBox);
+                }
+                currentBox = null;
+            }
+            mouseDown = false;
+            dragged = false;
+        });
+
+
+        function zoom(change) {
+            let factor = Math.pow(scaleMultiplier, change);
+            let newScale = scale * factor;
+
+            if (newScale >= minScale && newScale <= 3) {
+                let oldScale = scale;
+                scale = newScale;
+
+                // Adjust imageX and imageY to keep the image centered on zoom
+                let rect = canvas.getBoundingClientRect();
+                let centerX = (rect.left + rect.right) / 2;
+                let centerY = (rect.top + rect.bottom) / 2;
+
+                imageX = centerX - (centerX - imageX) * scale / oldScale;
+                imageY = centerY - (centerY - imageY) * scale / oldScale;
+
+                redraw();
+            }
+        }
+
+        canvas.addEventListener('wheel', function (event) {
+            if (mode === 'zoomDrag') {
+                zoom(event.deltaY < 0 ? -1 : 1);
+                event.preventDefault();
+            }
+        });
+
+        canvas.addEventListener('wheel', function (event) {
+            if (mode === 'zoomDrag') {
+                zoom(event.deltaY < 0 ? -1 : 1);
+                event.preventDefault();
+            }
+        });
+
+        document.getElementById('createBoxModeBtn').addEventListener('click', function () { setMode('createBox'); });
+        document.getElementById('zoomDragModeBtn').addEventListener('click', function () { setMode('zoomDrag'); });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,541 @@
+{% extends "base.html" %}
+{% block css %}
+<style>
+    #vertical-guide,
+    #horizontal-guide {
+        position: absolute;
+        background-color: gray;
+        pointer-events: none;
+        /* ensures the guidelines don't interfere with other mouse events */
+        display: none;
+        /* hide them by default */
+        z-index: 10;
+        /* position them above other elements, adjust as needed */
+    }
+
+    #vertical-guide {
+        width: 1px;
+        height: 100%;
+
+        top: 0;
+    }
+
+    #horizontal-guide {
+        height: 1px;
+        width: 100%;
+
+        left: 0;
+    }
+
+
+    #image-container {
+        position: relative;
+        height: 90vh;
+
+        background-color: #fff;
+    }
+
+    #image-container {
+        position: relative;
+        height: 100%;
+        background-color: #fff;
+    }
+
+    /* #image-container :hover {
+        cursor: crosshair;
+    } */
+
+    #zoom-controls {
+        height: 100%;
+        /* overflow: auto; */
+    }
+
+    /* #image :hover {
+        cursor: crosshair;
+    } */
+
+    .annotation {
+        position: absolute;
+        border: 2px solid red;
+        background-color: rgba(255, 0, 0, 0.2);
+        z-index: 2;
+    }
+
+    .annotation :hover {
+        cursor: pointer;
+    }
+
+    .annotation.selected {
+        border: 2px dashed gray;
+    }
+
+    select option[selected] {
+        background-color: '#fff'
+    }
+
+    .resize-handle {
+        cursor: pointer;
+        z-index: 2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pagetitle d-flex justify-content-between align-content-center">
+    <div class="pagetitle">
+        <h1>Projects : {{project.name}} (Reviewer)</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item "><a href="{{url_for('main.home')}}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{{url_for('main.project',id=project.id)}}">{{project.name}}</a>
+                </li>
+                <li class="breadcrumb-item active">{{task.path}}</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+    <div>
+
+
+        <a type="button" href="{{url_for('main.project_task',id=task.id-1)}}" id="prev-button"
+            class="btn btn-primary {% if start %} disabled {% endif %}"><i class="bi bi-chevron-left"></i>Prev </a>
+        <a type="button" href="{{url_for('main.project_task',id=task.id+1)}}" id="next-button"
+            class="btn btn-primary {% if end %} disabled {% endif %}">Next<i class="bi bi-chevron-right"></i> </a>
+        <!-- <button type="button" id="save-button" class="btn btn-primary "><i class="bx bxs-save"></i> Save</button> -->
+        <button type="button" id="unsubmit-button" class="btn btn-warning "><i class="bi bi-bookmark-x-fill"></i>
+            Disapprove</button>
+        <button type="button" id="submit-button" class="btn btn-success"><i class="bi bi-bookmark-check-fill"></i>
+            Approve</button>
+    </div>
+</div>
+
+<section class=" section">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <div class="row">
+        <div class="col-2 mt-3">
+            <div class="col-lg-12">
+
+                <div class="card ">
+                    <div style="height: 30vh;overflow: auto;" id="annotation-list" class="card-body ">
+                        <h5 class="card-title">Annotation List</h5>
+                        <ul class="list-group" id="list">
+                        </ul>
+                        <!-- <ol id="list">
+                        </ol> -->
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-lg-12">
+
+                <div class="card">
+                    <div id="annotation-list" class="card-body">
+                        <h5 class="card-title">Project info</h5>
+                        {{project.labels_info}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-10">
+            <div id="image-container">
+                <div id="vertical-guide"></div>
+                <div id="horizontal-guide"></div>
+                <div id="zoom-controls">
+                    <div id="annotation-list"></div>
+                    <img id="image" draggable="false" src="../{{task.path}}" alt="Image for annotation">
+                </div>
+            </div>
+        </div>
+        <span></span>
+    </div>
+    <!-- Gallery -->
+
+    <!-- Vertically centered Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">New message</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">ID:</label>
+                            <input type="text" class="form-control" id="recipient-name" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">comment:</label>
+                            <textarea class="form-control" id="message-text"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="comment_btn" >Send message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Vertically centered Modal-->
+
+    <!-- Gallery -->
+
+
+
+
+</section>
+
+{% endblock %}
+
+{% block script %}
+<!-- <script src="../static/scripts/drowing.js"></script> -->
+<script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+        const image = document.getElementById('image');
+        const container = document.getElementById('image-container');
+        const img_container = document.getElementById('annotation-list')
+        const annotationList = document.getElementById('list');
+        const zoomInButton = document.getElementById('zoom-in');
+        const zoomOutButton = document.getElementById('zoom-out');
+        const zoomLevelSpan = document.getElementById('zoom-level');
+        const deleteButton = document.getElementById('delete-button');
+        const colorPicker = document.getElementById('color-picker');
+        const submitButton = document.getElementById('submit-button');
+        const unsubmitButton = document.getElementById('unsubmit-button');
+        const myModal = document.getElementById('verticalycentered');
+        const comment_btn = document.getElementById('comment_btn');comment_btn
+        let resizing = false;
+        const popup = container.querySelector('.popup');
+        let currentHandle = null;
+        const colors = [{% for color in project.labels_info['colors'] %}'{{color}}', {% endfor %}]
+        const classesname = [{% for color in project.labels_info['classname'] %}'{{color}}', {% endfor %}]
+    const checklist = [];
+
+
+    let zoomLevel = 100;
+    let drawing = false;
+    let start_x = 0;
+    let start_y = 0;
+    let boxes = [];
+    let firstBox = [];
+
+    let undoStack = [];
+
+
+    // saveButton.addEventListener('click', updateDatabase)
+    submitButton.addEventListener('click', submitTask)
+    unsubmitButton.addEventListener('click', unsubmitTask)
+
+    const exampleModal = document.getElementById('exampleModal')
+    comment_btn.addEventListener('click',save_comment)
+    if (exampleModal) {
+    exampleModal.addEventListener('show.bs.modal', event => {
+        // Button that triggered the modal
+        const button = event.relatedTarget
+        // Extract info from data-bs-* attributes
+        const recipient = button.getAttribute('data-bs-whatever')
+        // If necessary, you could initiate an Ajax request here
+        // and then do the updating in a callback.
+
+        // Update the modal's content.
+        const modalTitle = exampleModal.querySelector('.modal-title')
+        const modalBodyInput = exampleModal.querySelector('.modal-body input')
+
+        modalTitle.textContent = `Comment to ${recipient}`
+        modalBodyInput.value = recipient
+    })
+    }
+    function save_comment() {
+        const id = document.getElementById('recipient-name');
+        const comment = document.getElementById('message-text');
+        console.log(id.value,comment.value);
+        console.log(boxes[id.value]);
+        boxes[id.value]['commnet'] = comment.value;
+        updateList()
+        
+    }
+    // Fetch boxes from the API
+    function fetchBoxes() {
+        fetch(`{{url_for('api.get_task',id=task.id)}}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                boxes = [...data]; // Assign fetched boxes to the boxes array
+                firstBox = [...data]
+                updateAnnotations();
+                updateList();
+            })
+            .catch(error => {
+                console.error('Failed fetching boxes:', error);
+            });
+
+    }
+
+    // Assuming you have the imageId somewhere, you can call this function
+    fetchBoxes();
+
+    async function updateDatabase() {
+        res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "label": boxes })
+        })
+
+        firstBox = [...boxes]
+        updateList()
+        console.log({ "label": boxes })
+    }
+
+    async function submitTask() {
+        res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "label": boxes, "approved": true }),
+        })
+        firstBox = [...boxes]
+        console.log({ "label": boxes, "approved": true })
+    }
+
+    async function unsubmitTask() {
+        res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "label": boxes, "approved": false }),
+        })
+        firstBox = [...boxes]
+        console.log({ "label": boxes, "approved": false })
+    }
+
+    function test() {
+        alert('test')
+    }
+    function updateAnnotations() {
+
+        const existingAnnotations = document.querySelectorAll('.annotation');
+        existingAnnotations.forEach((annotation) => {
+            annotation.remove();
+        });
+
+        boxes.forEach((box, index) => createAnnotation(box, index));
+    }
+
+    function arraysHaveSameContent(arr1, arr2) {
+        if (arr1.length !== arr2.length) return false;
+        return arr1.slice().sort().every((value, index) => value === arr2.slice().sort()[index]);
+    }
+
+    function updateList() {
+        if (arraysHaveSameContent(boxes, firstBox)) {
+
+            // console.log(saveButton.classList)
+            console.log('disabled')
+            console.log(`box`);
+            console.log(boxes);
+            console.log(`firstBox`);
+            console.log(firstBox);
+        } else {
+            console.log('show')
+            console.log(`box`);
+            console.log(boxes);
+            console.log(`firstBox`);
+            console.log(firstBox);
+        }
+        annotationList.innerHTML = '';
+        boxes.forEach((box, index) => {
+            const listItem = document.createElement('li');
+            // listItem.style.color = colors[box.classname] 
+            listItem.style.backgroundColor = box.backgroundColor
+            listItem.classList.add('list-group-item');
+            if (box.approved) {
+                const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." checked>
+                <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>
+                <div class="text-dark">${box.commnet}</div>`;
+                listItem.innerHTML = tmp
+            }
+            else {
+                const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="...">
+                <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id = ${index}</span>
+                <div class="text-dark">${box.commnet}</div>`;
+                listItem.innerHTML = tmp
+            }
+
+
+            // listItem.textContent = `${classesname[box.classname]}: x=${(box.x).toFixed(2)}, y=${(box.y).toFixed(2)}, width=${(box.width).toFixed(2)}, height=${box.height.toFixed(2)}, class=${box.classname}`;
+            annotationList.appendChild(listItem);
+
+        });
+        updateAnnotations()
+        document.querySelectorAll('.form-check-input').forEach(container => {
+            // const clickableDiv = container.querySelector('.form-check-input');
+
+            container.addEventListener('click', function (event) {
+                // Position the popup div at the click position
+
+                console.log(container.value);
+                console.log(container.checked);
+                boxes[container.value]['approved'] = container.checked
+                updateDatabase()
+            });
+        });
+        // document.getElementById(`check${index}`).addEventListener('onchange', function (event) {
+        //         console.log('test');
+        //     });
+    }
+
+    function adjustZoom(factor) {
+        zoomLevel += factor;
+        zoomLevel = Math.min(Math.max(zoomLevel, 50), 200);
+        image.style.width = `${zoomLevel}%`;
+        zoomLevelSpan.textContent = zoomLevel;
+
+        // Original dimensions
+        const originalWidth = image.naturalWidth;
+        const originalHeight = image.naturalHeight;
+
+        // Displayed dimensions
+        const displayedWidth = image.width;
+        const displayedHeight = image.height;
+
+        console.log(`Original dimensions: ${originalWidth}x${originalHeight}`);
+        console.log(`Displayed dimensions: ${displayedWidth}x${displayedHeight}`);
+        updateAnnotations();
+    }
+
+    function createAnnotation(box, index) {
+        const annotation = document.createElement('div');
+        annotation.className = 'annotation';
+        annotation.dataset.index = index;
+        annotation.innerHTML = `<div style="background-color: ${box.borderColor}; color: #000">id = ${index + 1} : ${classesname[box.classname]} <button type="button" class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="${index}"><i class="bi bi-plus-lg
+"></i>add comment</button></div>`
+
+        annotation.style.borderColor = box.borderColor;
+        annotation.style.backgroundColor = box.backgroundColor
+
+
+        annotation.addEventListener('click', function () {
+            // annotation.classList.toggle('selected');
+            // test()
+            console.log(annotation.dataset.index);
+
+        });
+
+
+        annotation.style.left = `${box.x * image.width}px`;
+        annotation.style.top = `${box.y * image.height}px`;
+        annotation.style.width = `${box.width * image.width}px`;
+        annotation.style.height = `${box.height * image.height}px`;
+
+
+
+        container.appendChild(annotation);
+    }
+
+    container.addEventListener('mousedown', function (event) {
+        const handle = event.target.closest('.resize-handle');
+        if (handle) {
+            resizing = true;
+            currentHandle = handle;
+            console.log(currentHandle);
+        }
+    });
+
+    document.addEventListener('mouseup', function () {
+        resizing = false;
+        currentHandle = null;
+    });
+
+    container.addEventListener('mousemove', function (event) {
+        if (!resizing || !currentHandle) return;
+        const rect = image.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / image.width;
+        const y = (event.clientY - rect.top) / image.height;
+        const box = boxes[parseInt(currentHandle.parentElement.dataset.index)];
+        const canses = currentHandle.className.split(' ')[1]
+
+        switch (canses) {
+            case 'nw':
+                box.width += (box.x - x);
+                box.height += (box.y - y);
+                box.x = x;
+                box.y = y;
+                break;
+            case 'ne':
+                box.width = x - box.x;
+                box.height += box.y - y;
+                box.y = y;
+                break;
+            case 'sw':
+                box.width += box.x - x;
+                box.height = y - box.y;
+                box.x = x;
+                break;
+            case 'se':
+                box.width = x - box.x;
+                box.height = y - box.y;
+                break;
+            case 'm':
+                const deltaX = (x - (box.x + box.width / 2));
+                const deltaY = (y - (box.y + box.height / 2));
+                box.x += deltaX;
+                box.y += deltaY;
+        }
+
+        updateAnnotations();
+        updateList();
+    });
+
+    // Listen for keyboard shortcuts for undo (Ctrl+Z) and redo (Ctrl+Shift+Z)
+    document.addEventListener('keydown', function (event) {
+
+        if (!isNaN(event.key) && event.key >= 1 && event.key <= colorPicker.options.length) {
+            colorPicker.value = event.key;
+
+            // Trigger the change event if there's an event listener for it
+            const changeEvent = new Event('change');
+            colorPicker.dispatchEvent(changeEvent);
+        }
+
+        // Check if Ctrl+Enter is pressed
+        if (event.ctrlKey && event.key === 'Enter') {
+            // Call the desired function or action here
+            submitTask()
+        }
+
+        if (event.ctrlKey && event.key === 's') {
+            // console.log('save');
+            updateDatabase()
+        }
+
+
+    });
+
+    });
+
+</script>
+{% endblock %}

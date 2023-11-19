@@ -71,7 +71,7 @@
         border: 2px dashed gray;
     }
 
-    select option[selected]{
+    select option[selected] {
         background-color: '#fff'
     }
 
@@ -96,10 +96,12 @@
         </nav>
     </div><!-- End Page Title -->
     <div>
-        
 
-        <a type="button" href="{{url_for('main.project_task',id=task.id-1)}}" id="prev-button" class="btn btn-primary {% if start %} disabled {% endif %}"><i class="bi bi-chevron-left"></i>Prev </a>
-        <a type="button" href="{{url_for('main.project_task',id=task.id+1)}}" id="next-button" class="btn btn-primary {% if end %} disabled {% endif %}">Next<i class="bi bi-chevron-right"></i> </a>
+
+        <a type="button" href="{{url_for('main.project_task',id=task.id-1)}}" id="prev-button"
+            class="btn btn-primary {% if start %} disabled {% endif %}"><i class="bi bi-chevron-left"></i>Prev </a>
+        <a type="button" href="{{url_for('main.project_task',id=task.id+1)}}" id="next-button"
+            class="btn btn-primary {% if end %} disabled {% endif %}">Next<i class="bi bi-chevron-right"></i> </a>
         <button type="button" id="save-button" class="btn btn-primary "><i class="bx bxs-save"></i> Save</button>
         <button type="button" id="submit-button" class="btn btn-success"><i class="bx bxs-save"></i> Submit</button>
     </div>
@@ -120,51 +122,7 @@
     {% endif %}
     {% endwith %}
     <div class="row">
-        <div class="col-2 mt-3">
-            <div class="col-lg-12">
-
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Label</h5>
-                        <select id="color-picker" class="form-select form-select-lg mb-3" >
-                            {% for label in project.labels_info['classname'] %}
-                            <option value="{{loop.index}}">{{label}}</option>
-                            {% endfor %}
-                        </select>
-                        <h5 class="card-title">Zoom Level: <span id="zoom-level">100</span>%</h5>
-                        <div id="zoom-controls" class="mb-2">
-                            <button id="zoom-in" class="btn btn-primary"><i class="bi bi-zoom-in"></i></button>
-                            <button id="zoom-out" class="btn btn-primary"><i class="bi bi-zoom-out"></i></button>
-                                
-                        </div>
-                        <button id="delete-button" class="btn btn-danger mb-2">Delete</button>
-                        <button id="reset-button" class="btn btn-danger mb-2">Reset</button>
-                    </div>
-                </div>
-
-            </div>
-            <div class="col-lg-12">
-
-                <div  class="card ">
-                    <div style="height: 30vh;overflow: auto;" id="annotation-list" class="card-body ">
-                        <h5 class="card-title">Annotation List</h5>
-                        <ol id="list">
-                        </ol>
-                    </div>
-                </div>
-
-            </div>
-            <div class="col-lg-12">
-
-                <div class="card">
-                    <div id="annotation-list" class="card-body">
-                        <h5 class="card-title">Project info</h5>
-                        {{project.labels_info}}
-                    </div>
-                </div>
-
-            </div>
-        </div>
+        
         <div class="col-10">
             <div id="image-container">
                 <div id="vertical-guide"></div>
@@ -175,7 +133,43 @@
                 </div>
             </div>
         </div>
-<span></span>
+        <div class="col-2 mt-3">
+            <div class="col-lg-12">
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Label</h5>
+                        <select id="color-picker" class="form-select form-select-lg mb-3">
+                            {% for label in project.labels_info['classname'] %}
+                            <option value="{{loop.index}}">{{label}}</option>
+                            {% endfor %}
+                        </select>
+                        <h5 class="card-title">Zoom Level: <span id="zoom-level">100</span>%</h5>
+                        <div id="zoom-controls" class="mb-2">
+                            <button id="zoom-in" class="btn btn-primary"><i class="bi bi-zoom-in"></i></button>
+                            <button id="zoom-out" class="btn btn-primary"><i class="bi bi-zoom-out"></i></button>
+
+                        </div>
+                        <button id="delete-button" class="btn btn-danger mb-2">Delete</button>
+                        <button id="reset-button" class="btn btn-danger mb-2">Reset</button>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-lg-12">
+
+                <div class="card ">
+                    <div style="height: 30vh;overflow: auto;" id="annotation-list" class="card-body ">
+                        <h5 class="card-title">Annotation List</h5>
+                        <ul class="list-group" id="list">
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            
+        </div>
+        <span></span>
     </div>
     <!-- Gallery -->
 
@@ -232,96 +226,96 @@
         const colors = [{% for color in project.labels_info['colors'] %}'{{color}}', {% endfor %}]
         const classesname = [{% for color in project.labels_info['classname'] %}'{{color}}', {% endfor %}]
 
-        let zoomLevel = 100;
-        let drawing = false;
-        let start_x = 0;
-        let start_y = 0;
-        let boxes = [];
-        let firstBox = [];
+    let zoomLevel = 100;
+    let drawing = false;
+    let start_x = 0;
+    let start_y = 0;
+    let boxes = [];
+    let firstBox = [];
 
-        let undoStack = [];
+    let undoStack = [];
 
-        const verticalGuide = document.getElementById('vertical-guide');
-        const horizontalGuide = document.getElementById('horizontal-guide');
+    const verticalGuide = document.getElementById('vertical-guide');
+    const horizontalGuide = document.getElementById('horizontal-guide');
 
-        let dragging = false; // To know if a box is being dragged
-        let draggedBox = null; // Reference to the box being dragged
-        let offsetX = 0; // To store the initial X offset
-        let offsetY = 0; // To store the initial Y offset
-
-
-        container.addEventListener('mousemove', function (event) {
-            const rect = container.getBoundingClientRect();
-            const xPos = event.clientX - rect.left;
-            const yPos = event.clientY - rect.top;
-
-            verticalGuide.style.left = xPos + 'px';
-            horizontalGuide.style.top = yPos + 'px';
-            verticalGuide.style.display = 'block';
-            horizontalGuide.style.display = 'block';
-        });
-
-        container.addEventListener('mousemove', function (event) {
-            if (!dragging || !draggedBox) return;
-
-            const containerRect = container.getBoundingClientRect();
-            const newX = (event.clientX - containerRect.left) - offsetX;
-            const newY = (event.clientY - containerRect.top) - offsetY;
-
-            draggedBox.x = newX / image.width;
-            draggedBox.y = newY / image.height;
-
-            updateAnnotations();
-        });
-
-        container.addEventListener('mouseleave', function () {
-            verticalGuide.style.display = 'none';
-            horizontalGuide.style.display = 'none';
-        });
+    let dragging = false; // To know if a box is being dragged
+    let draggedBox = null; // Reference to the box being dragged
+    let offsetX = 0; // To store the initial X offset
+    let offsetY = 0; // To store the initial Y offset
 
 
+    container.addEventListener('mousemove', function (event) {
+        const rect = container.getBoundingClientRect();
+        const xPos = event.clientX - rect.left;
+        const yPos = event.clientY - rect.top;
+
+        verticalGuide.style.left = xPos + 'px';
+        horizontalGuide.style.top = yPos + 'px';
+        verticalGuide.style.display = 'block';
+        horizontalGuide.style.display = 'block';
+    });
+
+    container.addEventListener('mousemove', function (event) {
+        if (!dragging || !draggedBox) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const newX = (event.clientX - containerRect.left) - offsetX;
+        const newY = (event.clientY - containerRect.top) - offsetY;
+
+        draggedBox.x = newX / image.width;
+        draggedBox.y = newY / image.height;
+
+        updateAnnotations();
+    });
+
+    container.addEventListener('mouseleave', function () {
+        verticalGuide.style.display = 'none';
+        horizontalGuide.style.display = 'none';
+    });
 
 
-        saveButton.addEventListener('click', updateDatabase)
-        submitButton.addEventListener('click', submitTask)
 
-        // Fetch boxes from the API
-        function fetchBoxes() {
-            fetch(`{{url_for('api.get_task',id=task.id)}}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    boxes = [...data]; // Assign fetched boxes to the boxes array
-                    firstBox = [...data]
-                    updateAnnotations();
-                    updateList();
 
-                })
-                .catch(error => {
-                    console.error('Failed fetching boxes:', error);
-                });
+    saveButton.addEventListener('click', updateDatabase)
+    submitButton.addEventListener('click', submitTask)
 
-        }
+    // Fetch boxes from the API
+    function fetchBoxes() {
+        fetch(`{{url_for('api.get_task',id=task.id)}}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                boxes = [...data]; // Assign fetched boxes to the boxes array
+                firstBox = [...data]
+                updateAnnotations();
+                updateList();
 
-        // Assuming you have the imageId somewhere, you can call this function
-        fetchBoxes();
+            })
+            .catch(error => {
+                console.error('Failed fetching boxes:', error);
+            });
 
-        async function updateDatabase() {
-            res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}})
+    }
+
+    // Assuming you have the imageId somewhere, you can call this function
+    fetchBoxes();
+
+    async function updateDatabase() {
+        res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}})
             })
 
-            firstBox = [...boxes]
-            updateList()
-            console.log({ "label": boxes, "label_by": {{ current_user.id }}})
+    firstBox = [...boxes]
+    updateList()
+    console.log({ "label": boxes, "label_by": {{ current_user.id }}})
     }
 
     async function submitTask() {
@@ -370,9 +364,22 @@
         annotationList.innerHTML = '';
         boxes.forEach((box, index) => {
             const listItem = document.createElement('li');
-            listItem.style.color = colors[box.classname]
-            const tmp = `<span class="badge rounded-pill bg-secondary-light" style="background-color:${colors[box.classname]}">${classesname[box.classname]}</span>`;
+            listItem.style.backgroundColor = box.backgroundColor
+            listItem.classList.add('list-group-item');
+            const tmp = `<input class="form-check-input me-1" type="checkbox" value="1" aria-label="..." disabled ><span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>`;
             listItem.innerHTML = tmp
+            if (box.approved) {
+                const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." checked disabled>
+                <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>
+                <div class="text-dark">${box.commnet}</div>`;
+                listItem.innerHTML = tmp
+            }
+            else {
+                const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." disabled>
+                <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>
+                <div class="text-dark">${box.commnet}</div>`;
+                listItem.innerHTML = tmp
+            }
             // listItem.textContent = `${classesname[box.classname]}: x=${(box.x).toFixed(2)}, y=${(box.y).toFixed(2)}, width=${(box.width).toFixed(2)}, height=${box.height.toFixed(2)}, class=${box.classname}`;
             annotationList.appendChild(listItem);
         });
@@ -401,11 +408,16 @@
         const annotation = document.createElement('div');
         annotation.className = 'annotation';
         annotation.dataset.index = index;
-
+        
         annotation.style.borderColor = box.borderColor;
         annotation.style.backgroundColor = box.backgroundColor
+        if (box.approved){
+        annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} <i class="bi bi-check-circle-fill"></i> </span>`
+        } else {
+        annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} `
 
-
+        }
+            
         annotation.addEventListener('click', function () {
             annotation.classList.toggle('selected');
         });
@@ -416,7 +428,7 @@
         annotation.style.width = `${box.width * image.width}px`;
         annotation.style.height = `${box.height * image.height}px`;
 
-        ['nw', 'ne', 'sw', 'se','m'].forEach(pos => {
+        ['nw', 'ne', 'sw', 'se', 'm'].forEach(pos => {
             const handle = document.createElement('div');
             handle.className = `resize-handle ${pos}`;
             handle.style.position = 'absolute';
@@ -435,7 +447,7 @@
                 handle.style.transform = 'translate(-50%, -50%)';
                 handle.style.borderRadius = '50%';
             }
-            
+
             annotation.appendChild(handle);
         });
 
@@ -464,7 +476,7 @@
         const borderColor = colors[selectedClass];
         const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
 
-    
+
         const box = {
             x: Math.min(start_x, end_x) / image.width,
             y: Math.min(start_y, end_y) / image.height,
@@ -472,7 +484,9 @@
             height: Math.abs(end_y - start_y) / image.height,
             classname: selectedClass,
             borderColor: borderColor,
-            backgroundColor: borderColor+'40'
+            backgroundColor: borderColor + '40',
+            approved: false,
+            commnet:''
         };
         if (box.height == 0 || box.width == 0) return;
 
@@ -526,7 +540,7 @@
             console.log(currentHandle);
         }
     });
-    
+
     document.addEventListener('mouseup', function () {
         resizing = false;
         currentHandle = null;
@@ -535,11 +549,11 @@
     container.addEventListener('mousemove', function (event) {
         if (!resizing || !currentHandle) return;
         const rect = image.getBoundingClientRect();
-        const x = (event.clientX - rect.left)/image.width;
-        const y = (event.clientY - rect.top)/image.height;
+        const x = (event.clientX - rect.left) / image.width;
+        const y = (event.clientY - rect.top) / image.height;
         const box = boxes[parseInt(currentHandle.parentElement.dataset.index)];
         const canses = currentHandle.className.split(' ')[1]
-    
+
         switch (canses) {
             case 'nw':
                 box.width += (box.x - x);
@@ -562,12 +576,12 @@
                 box.height = y - box.y;
                 break;
             case 'm':
-                const deltaX = (x - (box.x + box.width/2));
-                const deltaY = (y - (box.y + box.height/2));
+                const deltaX = (x - (box.x + box.width / 2));
+                const deltaY = (y - (box.y + box.height / 2));
                 box.x += deltaX;
                 box.y += deltaY;
         }
-    
+
         updateAnnotations();
         updateList();
     });
@@ -576,11 +590,11 @@
     document.addEventListener('keydown', function (event) {
 
         if (!isNaN(event.key) && event.key >= 1 && event.key <= colorPicker.options.length) {
-        colorPicker.value = event.key;
-        
-        // Trigger the change event if there's an event listener for it
-        const changeEvent = new Event('change');
-        colorPicker.dispatchEvent(changeEvent);
+            colorPicker.value = event.key;
+
+            // Trigger the change event if there's an event listener for it
+            const changeEvent = new Event('change');
+            colorPicker.dispatchEvent(changeEvent);
         }
 
         // Check if Ctrl+Enter is pressed

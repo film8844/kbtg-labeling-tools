@@ -4,7 +4,7 @@ services:
   app:
     build: .
     env_file:
-      - ./docker.env
+      - ./.env
     ports:
       - 8080:8080
     restart: on-failure
@@ -15,7 +15,7 @@ services:
     image: postgres:15.1-alpine
     restart: always
     env_file:
-      - ./docker.env
+      - ./.env
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}

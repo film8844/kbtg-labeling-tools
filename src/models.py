@@ -4,10 +4,16 @@ from sqlalchemy.dialects.postgresql import JSON
 from app import db
 
 
-project_user = db.Table('project_user',
-                    db.Column('project_id', db.Integer, db.ForeignKey('users.id')),
-                    db.Column('user_id', db.Integer, db.ForeignKey('projects.id'))
-                    )
+class project_user(db.Model,UserMixin):
+    __tablename__ = 'project_user'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id= db.Column('project_id', db.Integer, db.ForeignKey('users.id'))
+    project_id = db.Column('user_id', db.Integer, db.ForeignKey('projects.id'))
+    role = db.Column('role', db.String(60))
+
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 class User(db.Model,UserMixin):
     __tablename__ = 'users'
@@ -41,6 +47,7 @@ class Task(db.Model):
     label = db.Column(JSON)
     label_by = db.Column(db.Integer, db.ForeignKey('users.id'),nullable=True)
     finished = db.Column(db.Boolean, default=False)
+    approved = db.Column(db.Boolean, default=False)
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
 
     def list(self):
@@ -53,3 +60,7 @@ def serialize(tables):
     models = [model.to_dict() for model in tables]
     return models
 
+
+if __name__ == '__main__':
+    data = project_user.query.filter().all()
+    print(data)

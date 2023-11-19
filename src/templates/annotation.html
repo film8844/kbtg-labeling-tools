@@ -17,10 +17,13 @@
     <div>
         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#export-model"><i
                 class="ri-file-download-fill"></i> Export</button>
+        {% if project.creator_id == current_user.id %}
         <a href="{{url_for('main.project_upload',id=project.id)}}" class="btn btn-warning">
             <i class="bx bx-upload"></i> Upload Data</a>
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-model"><i
                 class="bx bxs-folder-minus"></i> Delete</button>
+        {% endif %}
+        
     </div>
 </div>
 
@@ -39,6 +42,56 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+            <div class="card top-selling overflow-auto">
+                <div class="card-body pb-0">
+                    <h5 class="card-title">Projects Settings </h5>
+                    
+    
+                </div>
+    
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+            <div class="card top-selling overflow-auto">
+                <div class="card-body pb-0">
+                    <h5 class="card-title">Project Members <span>| {% if project.creator_id == current_user.id %}
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#add-user-model"><i class="ri-user-add-fill"></i></button>{% endif %}</span></h5>
+                        
+                        
+                    <table class="table table-borderless">
+                        <thead>
+                          <tr>
+                            <th scope="col">User</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Role</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th><img src="https://robohash.org/{{owner.username}}" alt="Profile" width="40" class="rounded-circle"></th>
+                            <th>{{owner.username}}</th>
+                            <th>{{owner.name}}</th>
+                            <td><i class="ri-shield-star-fill"></i> Owner</td>
+                          </tr>
+                          {% for user in users%}
+                          <tr>
+                            <th><img src="https://robohash.org/{{user.username}}" alt="Profile" width="40" class="rounded-circle"></th>
+                            <th>{{user.username}}</th>
+                            <th>{{user.name}}</th>
+                            <td> {{user.role}}</td>
+                          </tr>
+                          {%endfor %}
+                        </tbody>
+                      </table>
+    
+                </div>
+    
+            </div>
+        </div>
+    </div>
 
     <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
         <div class="card top-selling overflow-auto">
@@ -65,7 +118,10 @@
                                         class=" rounded" src="../{{ task.path }}" width="75" height="75"
                                         alt="{{task.path}}"></a></th>
                             <td><a href="{{ url_for('main.project_task',id=task.id) }}">{{task.path}}</a></td>
-                            <td>{% if task.finished %}
+                            <td>
+                                {% if task.approved %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                                {% elif task.finished %}
                                 <span class="badge bg-success">Completed</span>
                                 {% elif task.label_by %}
                                 <span class="badge bg-warning">In Progress</span>
@@ -128,7 +184,7 @@
             <form>
                 <div class="modal-body">
                     Fill the confirm text
-                    <input class="form-control" type="text">
+                    <input class="form-control" id="delete-text" type="text">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -194,6 +250,42 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">Export</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div><!-- End Basic Modal-->
+<!-- End Vertically centered Modal  -->
+
+<!-- Add user Modal -->
+<div class="modal fade" id="add-user-model" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add users</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{url_for('api.project_add_user',id=project.id)}}" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="userSelect">Select User:</label>
+                        <select name="user" class="form-control" >
+                            {% for user in all_user %}
+                            <option value="{{user.id}}">({{user.username}}) {{user.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group my-3">
+                        <label for="roleSelect">Select Role:</label>
+                        <select name="role" class="form-control">
+                            <option value="labeler">Labeler</option>
+                            <option value="reviewer">Reviewer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add</button>
                 </div>
             </form>
         </div>

@@ -14,11 +14,15 @@ python setup.py
 # run on local
 3. run docker database
 ```bash
-docker compose up -d --build
+docker compose --file docker-compose.database.yaml up -d 
 ```
 2.
 ```bash
 cd src
 export $(cat ../.env)
 python run.py
+```
+# run on Docker
+```bash
+docker-compose up -d --build
 ```

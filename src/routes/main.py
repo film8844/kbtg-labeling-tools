@@ -1,13 +1,14 @@
 from pydoc import classname
 from flask import Blueprint, render_template,abort, request, redirect, flash, url_for, jsonify
 from werkzeug.utils import secure_filename
-from models import User, Project, Task
+from models import User, Project, Task,project_user,serialize
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from utils.forms import ProjectForm
 from app import db, UPLOAD_FOLDER
 import os
 from PIL import Image
 from utils.colors import generate_colors
+from utils.auth import require_project_permission,get_project_permission
 
 router = Blueprint('main', __name__)
 
@@ -24,13 +25,17 @@ def home():
 
 @router.route('/project/<id>')
 @login_required
+@require_project_permission()
 def project(id):
     project = Project.query.filter_by(id=id).first()
     # If no project is found for the given ID, abort with a 404 error.
     if project is None:
         abort(404)
     tasks = Task.query.filter_by(project_id = id).all()
-    return render_template('annotation.html', project=project,tasks=tasks)
+    owner = User.query.get(project.creator_id)
+    users = project_user.query.join(User,project_user.user_id==User.id).add_columns(User.id,project_user.user_id, User.name, User.username,project_user.project_id, project_user.role).filter(project_user.project_id==id).all()
+    all_user = User.query.all()
+    return render_template('annotation.html', project=project,tasks=tasks,users=users,owner=owner,all_user=all_user)
 
 @router.route('/task/<id>')
 @login_required
@@ -43,16 +48,27 @@ def project_task(id):
     all_tasks = sorted([i.to_dict()['id'] for i in all_tasks])
     print(all_tasks)
     print(id,all_tasks[0],all_tasks[-1])
+
+    users = project_user.query.filter_by(project_id=project.id).all()
+    users = serialize(users)
+
+    permission = get_project_permission(project.id)
+    print(permission)
+    # return permission
+
     if int(id) == all_tasks[0]:
         start = True
     if int(id) == all_tasks[-1]:
         end = True
     print(start,end)
-
     if project.type == 'det':
-        return render_template('object_detection.html', project=project, task=task, start=start,end=end)
+        if permission == 'reviewer':
+            return render_template('object_detection_review.html', project=project, task=task, start=start, end=end)
+        return render_template('object_detection.html', project=project, task=task, start=start, end=end)
     elif project.type == 'class':
-        return render_template('classification.html', project=project, task=task, start=start,end=end)
+        if permission == 'reviewer':
+            return render_template('classification_review.html', project=project, task=task, start=start, end=end)
+        return render_template('classification.html', project=project, task=task, start=start, end=end)
 
 @router.route('/create_project', methods=['GET', 'POST'])
 @login_required
