@@ -50,10 +50,10 @@
         /* overflow: auto; */
     }
 
-    #image :hover {
+    /* #image :hover {
         cursor: crosshair;
         /* z-index: 999 !important; */
-    }
+    } */
     #image {
         position: relative;
         
@@ -163,7 +163,7 @@
             <div class="col-2 p-1">
                 <div class="col-lg-12">
                     <div class="card">
-                        <h5 class="card-title">Annotation List</h5>
+                        <h5 class="card-title m-2">Annotation List</h5>
                         <div style="height: 33vh;overflow: auto;" id="annotation-list" class="card-body p-0">
                             
                             <div class="card-body p-1"></div>
@@ -178,7 +178,7 @@
                             <h5 class="card-title m-2">Task List</h5>
                             <ul class="list-group" id="list">
                                 {% for t in tasks %}
-                                <li class="list-group-item text-nowrap overflow-auto {% if t.id == task.id  %}active{% endif %}">
+                                <li class="list-group-item text-nowrap text-sm overflow-auto {% if t.id == task.id  %}active{% endif %}">
                                     {% if t.approved %}
                                     <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Approved</span>
                                     {% elif t.finished %}
@@ -209,7 +209,7 @@
 <div class="card form-popup" id="popup">
     <div class="card-header">Annotation Editor</div>
     <div class="card-body">
-        <label for="color-picker">Annotation Editor</label>
+        <label for="color-picker">Class </label>
         <select id="color-picker" name="color-picker" class="form-select form-select-sm mb-3">
             {% for label in project.labels_info['classname'] %}
             <option value="{{loop.index}}">{{label}}</option>
@@ -294,13 +294,13 @@
     let offsetY = 0; // To store the initial Y offset
 
 
-    container.addEventListener('mousemove', function (event) {
+    zoomControl.addEventListener('mousemove', function (event) {
         if (mode != 'draw') {
             verticalGuide.style.display = 'none';
             horizontalGuide.style.display = 'none';
             return;
         };
-        const rect = container.getBoundingClientRect();
+        const rect = zoomControl.getBoundingClientRect();
         const xPos = event.clientX - rect.left;
         const yPos = event.clientY - rect.top;
 
@@ -470,6 +470,7 @@
         })
     firstBox = [...boxes]
     console.log({ "label": boxes, "label_by": {{ current_user.id }}, "finished": true})
+    window.location.reload();
     }
 
     function updateAnnotations() {
@@ -506,6 +507,7 @@
         annotationList.innerHTML = '';
         boxes.forEach((box, index) => {
             const listItem = document.createElement('li');
+            listItem.dataset.index = index
             listItem.style.backgroundColor = box.backgroundColor
             listItem.classList.add('list-group-item');
             const tmp = `<input class="form-check-input me-1" type="checkbox" value="1" aria-label="..." disabled ><span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>`;
@@ -561,20 +563,31 @@
         // }
         annotation.addEventListener('mousedown', function () {
             if (mode =='edit') {
+                dragging = false;
                 annotation.classList.toggle('selected');
             }
         });
         annotation.addEventListener('mouseover', function () {
             if (mode=='edit') {
                 annotation.style.backgroundColor = box.borderColor+'33';
+                
+
                 dragging = false;
                 console.log(index);
                 annotation.style.zIndex = 999
+
+                const li = document.querySelector(`li[data-index="${index}"]`);
+                li.style.backgroundColor = box.borderColor+'33';
             }
             
         });
-
-
+        annotation.addEventListener('mouseout', function () {
+            if (mode=='edit') {
+                const li = document.querySelector(`li[data-index="${index}"]`);
+                li.style.backgroundColor = box.borderColor+'00';
+            }
+            
+        });
 
         annotation.addEventListener('click', function () {
             if (mode =='edit') {
@@ -607,7 +620,7 @@
             if (pos.includes('e')) handle.style.right = '-4px';
             handle.style.width = '8px';
             handle.style.height = '8px';
-            handle.style.backgroundColor = box.backgroundColor;
+            handle.style.backgroundColor = box.borderColor;
             if (pos === 'm') {
                 handle.style.top = '2%';
                 handle.style.left = '2%';
@@ -615,7 +628,7 @@
                 handle.style.height = '95%';
                 handle.style.backgroundColor = box.backgroundColor
                 // handle.style.transform = 'translate(-50%, -50%)';
-                // handle.style.borderRadius = '50%';
+                handle.style.borderRadius = '50%';
                 handle.addEventListener('click',function () {
                 if (mode =='edit') {
                     dragging = false;
@@ -628,10 +641,9 @@
             }
             })
             }
-            
-
             annotation.appendChild(handle);
         });
+
         container.appendChild(annotation);
     }
     zoomControl.addEventListener('mousedown', function (event) {
@@ -683,6 +695,15 @@
         dragging=false;
         updateAnnotations()
     })
+
+    container.addEventListener('mouseover', function (event) {
+        console.log('over');
+        if (mode === 'draw') {
+            this.style.cursor = 'default';
+        } else if (mode === 'edit') {
+            this.style.cursor = 'pointer';
+        }
+    });
     container.addEventListener('mousedown', function (event) {
         if (mode === 'draw') {
             drawing = true;
@@ -843,7 +864,7 @@
         if (handle) {
             resizing = true;
             currentHandle = handle;
-            console.log(currentHandle);
+            // console.log(currentHandle);
         }
     });
 
