@@ -111,13 +111,11 @@
                     </thead>
                     <tbody>
                         {% for task in tasks %}
-
                         <tr>
-
                             <th scope="row"><a href="{{ url_for('main.project_task',id=task.id) }}"><img
                                         class=" rounded" src="../{{ task.path }}" width="75" height="75"
                                         alt="{{task.path}}"></a></th>
-                            <td><a href="{{ url_for('main.project_task',id=task.id) }}">{{task.path}}</a></td>
+                            <td><a href="{{ url_for('main.project_task',id=task.id) }}">{{task.path.split('/')[-1]}}</a></td>
                             <td>
                                 {% if task.approved %}
                                 <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Approved</span>
@@ -139,12 +137,9 @@
                                     data-bs-toggle="dropdown">
                                     <img src="{{ url_for('auth.profile_img', id=task.label_by) }}" width="30"
                                         height="30" alt="Profile" class="rounded-circle">
-
                                 </a>
                                 {% endif %}
                             </td>
-
-
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -2,6 +2,7 @@ from pydoc import classname
 from flask import Blueprint, render_template,abort, request, redirect, flash, url_for, jsonify
 from werkzeug.utils import secure_filename
 from models import User, Project, Task,project_user,serialize
+from sqlalchemy import desc
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from utils.forms import ProjectForm
 from app import db, UPLOAD_FOLDER
@@ -44,8 +45,8 @@ def project_task(id):
     project = Project.query.filter_by(id = task.project_id).first()
     start = False
     end = False
-    all_tasks = Task.query.filter_by(project_id = project.id).all()
-    all_tasks = sorted([i.to_dict()['id'] for i in all_tasks])
+    tasks = Task.query.filter_by(project_id = project.id).order_by(Task.id).all()
+    all_tasks = sorted([i.to_dict()['id'] for i in tasks])
     print(all_tasks)
     print(id,all_tasks[0],all_tasks[-1])
 
@@ -64,7 +65,7 @@ def project_task(id):
     if project.type == 'det':
         if permission == 'reviewer':
             return render_template('object_detection_review.html', project=project, task=task, start=start, end=end)
-        return render_template('object_detection.html', project=project, task=task, start=start, end=end)
+        return render_template('object_detection.html', project=project, task=task, start=start, end=end,tasks=tasks)
     elif project.type == 'class':
         if permission == 'reviewer':
             return render_template('classification_review.html', project=project, task=task, start=start, end=end)
@@ -128,7 +129,32 @@ def upload_file(project_id):
         db.session.commit()
     return jsonify({'status': 'uploaded'})
 
-@router.route('/label')
+@router.route('/labeling/<id>')
 @login_required
-def labeling():
-    return render_template('index.html')
+def labeling(id):
+    print(id)
+    project = Project.query.filter_by(id = id).first()
+    start = False
+    end = False
+    all_tasks = Task.query.filter_by(project_id = project.id).all()
+    all_tasks = sorted([i.to_dict()['id'] for i in all_tasks])
+
+
+    permission = get_project_permission(project.id)
+    print(permission)
+    # return permission
+
+    if int(id) == all_tasks[0]:
+        start = True
+    if int(id) == all_tasks[-1]:
+        end = True
+    print(start,end)
+    if project.type == 'det':
+        if permission == 'reviewer':
+            return render_template('object_detection_review.html', project=project, task=task, start=start, end=end)
+        return render_template('object_detection_v2.html', project=project,tasks = all_tasks)
+    elif project.type == 'class':
+        if permission == 'reviewer':
+            return render_template('classification_review.html', project=project, task=task, start=start, end=end)
+        return render_template('classification.html', project=project, task=task, start=start, end=end)
+    return render_template('object_detection_v2.html')

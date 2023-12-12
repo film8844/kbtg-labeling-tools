@@ -98,7 +98,7 @@
         function drawBox(box) {
             ctx.strokeStyle = 'red';
             ctx.lineWidth = 2;
-            ctx.strokeRect(box.startX * image.width * scale + imageX, box.startY * image.height * scale + imageY, box.width * image.width * scale, box.height * image.height* scale);
+            ctx.strokeRect((box.startX * image.width * scale) + imageX, (box.startY * image.height * scale) + imageY, box.width * image.width * scale, box.height * image.height* scale);
         }
 
         function isWithinImageBounds(x, y) {
@@ -118,23 +118,22 @@
             mouseDown = true;
             startDragOffset.x = e.clientX - canvas.offsetLeft;
             startDragOffset.y = e.clientY - canvas.offsetTop;
-            console.log(image.width,image.height);
+            console.log(startDragOffset);
 
             if (mode === 'createBox') {
                 let rect = canvas.getBoundingClientRect();
                 if (isWithinImageBounds(e.clientX - rect.left, e.clientY - rect.top)) {
                     currentBox = {
-                        startX: (e.clientX - rect.left - imageX) / image.width,
-                        startY: (e.clientY - rect.top - imageY) / image.height,
+                        startX: (e.clientX - rect.left + imageX) / image.width,
+                        startY: (e.clientY - rect.top + imageY) / image.height,
                         width: 0,
                         height: 0
                     };
+                    console.log(imageX,imageY);
+                    console.log(currentBox);
                 }
             }
             if (mode === 'editBox') {
-                
-                
-                
                 let rect = canvas.getBoundingClientRect();
                 let mouseX = (e.clientX - rect.left - imageX) / scale;
                 let mouseY = (e.clientY - rect.top - imageY) / scale;
@@ -154,12 +153,13 @@
             if (mouseDown) {
                 if (mode === 'createBox' && currentBox) {
                     let rect = canvas.getBoundingClientRect();
+                    canvas.getBoundingClientRect()
                     let endX = (e.clientX - rect.left - imageX) / image.width;
                     let endY = (e.clientY - rect.top - imageY) / image.height;
 
                     currentBox.width = (Math.min(endX, 1) - currentBox.startX);
                     currentBox.height = (Math.min(endY, 1) - currentBox.startY);
-                    console.log(currentBox);
+                    console.log(currentBox.startX, currentBox.startY,currentBox.width,currentBox.height);
                     redraw();
                 } else if (mode === 'zoomDrag') {
                     dragged = true;
@@ -190,8 +190,6 @@
             dragged = false;
         });
 
-
-
         function zoom(change) {
             let factor = Math.pow(scaleMultiplier, change);
             let newScale = scale * factor;
@@ -211,6 +209,7 @@
                 redraw();
             }
         }
+        
 
         canvas.addEventListener('wheel', function (event) {
             if (mode === 'zoomDrag') {
@@ -218,7 +217,6 @@
                 event.preventDefault();
             }
         });
-
 
         document.getElementById('createBoxModeBtn').addEventListener('click', function () { setMode('createBox'); });
         document.getElementById('zoomDragModeBtn').addEventListener('click', function () { setMode('zoomDrag'); });
@@ -237,7 +235,7 @@
         }
 
         function zoomFit() {
-            console.log(canvas.width,canvas.height);
+            console.log(canvas.width, canvas.height);
             if (canvas.width > canvas.height) {
                 scale = canvas.width/image.width;
             } else {
@@ -252,7 +250,6 @@
         document.getElementById('zoomInBtn').addEventListener('click', zoomIn);
         document.getElementById('zoomOutBtn').addEventListener('click', zoomOut);
         document.getElementById('resetBtn').addEventListener('click', zoomFit);
-
         updateBoxList();
         document.addEventListener('keydown', function (event) {
             console.log(event.key);
@@ -262,6 +259,7 @@
             if(event.key === 'v'){
                 setMode('zoomDrag');
             }
+
         })
         console.log(scale);
     </script>

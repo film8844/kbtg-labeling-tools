@@ -29,16 +29,16 @@
 
 
     #image-container {
-        position: relative;
-        height: 100%;
-
-        background-color: #fff;
+        position: absolute;
+        /* height: 75vh; */
+        /* overflow: scroll; */
+        /* background-color: #fff; */
     }
-
-    #image-container {
+    #zoom-control {
         position: relative;
-        height: 100%;
         background-color: #fff;
+        height: 75vh;
+        overflow: hidden;
     }
 
     #image-container :hover {
@@ -50,11 +50,15 @@
         /* overflow: auto; */
     }
 
-
-
     #image :hover {
         cursor: crosshair;
+        /* z-index: 999 !important; */
     }
+    #image {
+        position: relative;
+        
+    }
+
 
     .annotation {
         position: absolute;
@@ -65,6 +69,9 @@
 
     .annotation :hover {
         cursor: pointer !important;
+    }
+    .annotation :hover .resize-handle {
+        display: block;
     }
 
     .annotation.selected {
@@ -77,13 +84,146 @@
 
     .resize-handle {
         cursor: pointer;
-        z-index: 2;
+        z-index: 4;
+    }
+    .form-popup {
+        display: none;
+        position: fixed;
+        bottom: 20vh;
+        right: 20vw;
+        border: 3px solid #f1f1f1;
+        z-index: 9;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="pagetitle d-flex justify-content-between align-content-center">
+
+
+<!-- <div class="row">
+    <div class="col-2" style="background-color: yellow;">test</div>
+    <div class="col-10">
+        <div class="row">
+            <div class="col-10" style="background-color: red;">test</div>
+            <div class="col-2" style="background-color: blue;">
+            <div class="card">
+                test
+            </div>
+            </div>
+        </div>
+    </div>
+</div> -->
+<div class="row">
+    <div class="col-1">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body align-center text-center">
+                    <!-- <h5 class="card-title">Label</h5> -->
+                    <div class="mt-2">
+                        <button id="draw-mode" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="R: Rectangle Mode"><i class="bx bx-selection"></i></button>
+                    </div>
+                    <div class="mt-2">
+                        <button id="edit-mode" class="btn btn-primary"  data-bs-toggle="tooltip" data-bs-placement="right" title="E: Edit Mode"><i class="bx bxs-edit"></i></button>
+                    </div>
+                    <div class="mt-2">
+                        <button id="zoom-in" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="Zoom in"><i class="bi bi-zoom-in"></i></button>
+                    </div>
+                    <div class="mt-2">
+                        <button id="zoom-out" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="Zoome out"><i class="bi bi-zoom-out"></i></button>
+                    </div>
+                    <div class="mt-2">
+                        <button id="delete-button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="right" title="Delete selection"><i class="bx bxs-trash"></i></button>
+                    </div>
+                    <div class="mt-2">
+                        <button id="reset-button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="right" title="Reset"><i class="bx bx-revision"></i></button>
+                    </div>
+                    <!-- <h5 class="card-title">Zoom Level: <span id="zoom-level">100</span>%</h5> -->
+                    <!-- <div id="zoom-controls" class="mb-2">
+                        <button id="zoom-in" class="btn btn-primary"><i class="bi bi-zoom-in"></i></button>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-11">
+        <div class="row">
+            <div class="col-10 p-0" id="zoom-control">
+                <div id="vertical-guide"></div>
+                <div id="horizontal-guide"></div>
+                <div id="image-container">
+                    
+                    <img id="image" draggable="false" src="../{{task.path}}" alt="Image for annotation">
+                    <div id="annotation-list"></div>
+                    
+                </div>
+                
+                
+                
+            </div>
+            <div class="col-2 p-1">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <h5 class="card-title">Annotation List</h5>
+                        <div style="height: 33vh;overflow: auto;" id="annotation-list" class="card-body p-0">
+                            
+                            <div class="card-body p-1"></div>
+                            <ul class="list-group" id="list">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div style="max-height: 33vh;overflow: auto;" id="annotation-list" class="card-body p-1">
+                            <h5 class="card-title m-2">Task List</h5>
+                            <ul class="list-group" id="list">
+                                {% for t in tasks %}
+                                <li class="list-group-item text-nowrap overflow-auto {% if t.id == task.id  %}active{% endif %}">
+                                    {% if t.approved %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                                    {% elif t.finished %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% elif t.label_by %}
+                                    <span class="badge bg-warning">In Progress</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary-light">Not Started</span>
+                                    {% endif %}
+                                    {% if t.id == task.id  %}
+                                    <p>{{t.path.split('/')[-1]}} </p>
+                                    {% else %}
+                                    <a href="{{url_for('main.project_task',id=t.id)}}">{{t.path.split('/')[-1] }} </a>
+                                    {% endif %}
+                                    
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card form-popup" id="popup">
+    <div class="card-header">Annotation Editor</div>
+    <div class="card-body">
+        <label for="color-picker">Annotation Editor</label>
+        <select id="color-picker" name="color-picker" class="form-select form-select-sm mb-3">
+            {% for label in project.labels_info['classname'] %}
+            <option value="{{loop.index}}">{{label}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-danger" id="annotation_class_cancle">Cancle</button>
+        <button class="btn btn-success" id="annotation_class">Finish</button>
+    </div>
+    
+    
+</div>
+<div class="pagetitle d-flex mt-auto justify-content-between align-content-center">
     <div class="pagetitle">
         <h1>Projects : {{project.name}}</h1>
         <nav>
@@ -91,123 +231,25 @@
                 <li class="breadcrumb-item "><a href="{{url_for('main.home')}}">Projects</a></li>
                 <li class="breadcrumb-item"><a href="{{url_for('main.project',id=project.id)}}">{{project.name}}</a>
                 </li>
-                <li class="breadcrumb-item active">{{task.path}}</li>
+                <li class="breadcrumb-item active">{{task.path.split('/')[-1]}}</li>
             </ol>
         </nav>
-    </div><!-- End Page Title -->
+    </div>
     <div>
-
-
         <a type="button" href="{{url_for('main.project_task',id=task.id-1)}}" id="prev-button"
-            class="btn btn-primary {% if start %} disabled {% endif %}"><i class="bi bi-chevron-left"></i>Prev </a>
+            class="btn btn-primary {% if start %} disabled {% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="[ : Previous task"><i class="bi bi-chevron-left"></i>Prev </a>
         <a type="button" href="{{url_for('main.project_task',id=task.id+1)}}" id="next-button"
-            class="btn btn-primary {% if end %} disabled {% endif %}">Next<i class="bi bi-chevron-right"></i> </a>
-        <button type="button" id="save-button" class="btn btn-primary "><i class="bx bxs-save"></i> Save</button>
-        <button type="button" id="submit-button" class="btn btn-success"><i class="bx bxs-save"></i> Submit</button>
+            class="btn btn-primary {% if end %} disabled {% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="] : Next task">Next<i class="bi bi-chevron-right"></i> </a>
+        <button type="button" id="save-button" class="btn btn-primary " data-bs-toggle="tooltip" data-bs-placement="top" title="crl + s : Save"><i class="bx bxs-save"></i> Save</button>
+        <button type="button" id="submit-button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="crl + enter : Submit"><i class="bx bxs-save"></i> Submit</button>
     </div>
 </div>
-
-<section class=" section">
-    <div class="flash">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                {% if category %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-        {% endwith %}
-    </div>
-    <div class="row">
-        <div class="col-10">
-            <div id="image-container">
-                <div id="vertical-guide"></div>
-                <div id="horizontal-guide"></div>
-                <div id="zoom-controls">
-                    <div id="annotation-list"></div>
-                    <img id="image" draggable="false" src="../{{task.path}}" alt="Image for annotation">
-                </div>
-            </div>
-        </div>
-        <div class="col-2 mt-3">
-            <div class="col-lg-12">
-
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Label</h5>
-                        <select id="color-picker" class="form-select form-select-lg mb-3">
-                            {% for label in project.labels_info['classname'] %}
-                            <option value="{{loop.index}}">{{label}}</option>
-                            {% endfor %}
-                        </select>
-                        <h5 class="card-title">Zoom Level: <span id="zoom-level">100</span>%</h5>
-                        <div id="zoom-controls" class="mb-2">
-                            <button id="zoom-in" class="btn btn-primary"><i class="bi bi-zoom-in"></i></button>
-                            <button id="zoom-out" class="btn btn-primary"><i class="bi bi-zoom-out"></i></button>
-
-                        </div>
-                        <button id="delete-button" class="btn btn-danger mb-2">Delete</button>
-                        <button id="reset-button" class="btn btn-danger mb-2">Reset</button>
-                    </div>
-                </div>
-
-            </div>
-            <div class="col-lg-12">
-
-                <div class="card ">
-                    <div style="height: 30vh;overflow: auto;" id="annotation-list" class="card-body ">
-                        <h5 class="card-title">Annotation List</h5>
-                        <ul class="list-group" id="list">
-                        </ul>
-                    </div>
-                </div>
-
-            </div>
-            
-        </div>
-        <span></span>
-    </div>
-    <!-- Gallery -->
-
-
-
-    <!-- Gallery -->
-
-
-
-
-</section>
-<!-- End Vertically centered Modal -->
-<div class="modal fade" id="delete-model" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Project</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form>
-                <div class="modal-body">
-                    Fill the confirm text
-                    <input class="form-control" type="text">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div><!-- End Basic Modal-->
-<!-- End Vertically centered Modal  -->
 {% endblock %}
 
 {% block script %}
 <!-- <script src="../static/scripts/drowing.js"></script> -->
 <script>
+    
     document.addEventListener('DOMContentLoaded', function () {
         const image = document.getElementById('image');
         const container = document.getElementById('image-container');
@@ -221,11 +263,19 @@
         const saveButton = document.getElementById('save-button');
         const submitButton = document.getElementById('submit-button');
         const resetButton = document.getElementById('reset-button');
+        const zoomControl = document.getElementById('zoom-control');
         let resizing = false;
         let currentHandle = null;
+        let confirmed_box = false;
+        let current_box,mode ;
+
+        const R_mode = document.getElementById('draw-mode');
+        const E_mode = document.getElementById('edit-mode');
+
         const colors = [{% for color in project.labels_info['colors'] %}'{{color}}', {% endfor %}]
         const classesname = [{% for color in project.labels_info['classname'] %}'{{color}}', {% endfor %}]
 
+        
     let zoomLevel = 100;
     let drawing = false;
     let start_x = 0;
@@ -245,6 +295,11 @@
 
 
     container.addEventListener('mousemove', function (event) {
+        if (mode != 'draw') {
+            verticalGuide.style.display = 'none';
+            horizontalGuide.style.display = 'none';
+            return;
+        };
         const rect = container.getBoundingClientRect();
         const xPos = event.clientX - rect.left;
         const yPos = event.clientY - rect.top;
@@ -256,8 +311,9 @@
     });
 
     container.addEventListener('mousemove', function (event) {
-        if (!dragging || !draggedBox) return;
+        event.preventDefault();
 
+        if (!dragging || !draggedBox) return;
         const containerRect = container.getBoundingClientRect();
         const newX = (event.clientX - containerRect.left) - offsetX;
         const newY = (event.clientY - containerRect.top) - offsetY;
@@ -266,15 +322,13 @@
         draggedBox.y = newY / image.height;
 
         updateAnnotations();
+        updateList()
     });
 
     container.addEventListener('mouseleave', function () {
         verticalGuide.style.display = 'none';
         horizontalGuide.style.display = 'none';
     });
-
-
-
 
     saveButton.addEventListener('click', updateDatabase)
     submitButton.addEventListener('click', submitTask)
@@ -304,14 +358,102 @@
     // Assuming you have the imageId somewhere, you can call this function
     fetchBoxes();
 
+    function setMode(newMode) {
+        mode = newMode;
+        if (mode == 'draw') {
+            R_mode.classList.add('disabled');
+            E_mode.classList.remove('disabled');
+            // console.log(document.getElementsByClassName('resize-handle'));
+            let collect = document.getElementsByClassName('resize-handle')
+            for (let i = 0; i < collect.length; i++) {
+                collect[i].style.display = 'none'
+            }
+        }
+        if (mode == 'edit') {
+            R_mode.classList.remove('disabled');
+            E_mode.classList.add('disabled');
+            let collect = document.getElementsByClassName('resize-handle')
+            for (let i = 0; i < collect.length; i++) {
+                collect[i].style.display = 'block'
+            }
+        }
+    }
+    R_mode.addEventListener('click', function(e) {setMode('draw')});
+    E_mode.addEventListener('click', function(e) {setMode('edit')} );
+    function openForm() {
+        document.getElementById("popup").style.display = "block";
+        document.getElementById("popup").style.left = event.clientX;
+        document.getElementById("popup").style.top = event.clientY;
+    }
+    function cancleForm() {
+        document.getElementById("popup").style.display = "none";
+        let box = boxes.pop(-1);
+
+        updateAnnotations();
+        updateList();
+    }
+    function closeForm() {
+        if (mode == 'edit') {
+            document.getElementById("popup").style.display = "none";
+            const selectedClass = colorPicker.value - 1;
+            const classname = classesname[selectedClass]
+            const borderColor = colors[selectedClass];
+
+            const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+            const selectedAnnotations = document.querySelectorAll('.annotation.selected');
+            const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
+            
+            let box = boxes[indicesToDelete.splice(-1)]
+            box['classname'] = selectedClass;
+            box['borderColor'] = borderColor;
+            box['backgroundColor'] = borderColor + '00';
+            console.log(box);
+            // boxes.push(box);
+
+            updateAnnotations();
+            updateList();
+        } else {
+            document.getElementById("popup").style.display = "none";
+            const selectedClass = colorPicker.value - 1;
+            const classname = classesname[selectedClass]
+            const borderColor = colors[selectedClass];
+            const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+            let box = boxes.pop(-1);
+            // if (mode === 'edit') {
+            //     const selectedAnnotations = document.querySelectorAll('.annotation.selected');
+            //     const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
+            //     console.log(indicesToDelete);
+            //     // box = boxes[indicesToDelete.slice(-1)]
+            //     let box = boxes.pop(indicesToDelete.slice(0));
+            // } else {
+            //     let box = boxes.pop(-1);
+            // }
+
+            
+
+            box['classname'] = selectedClass;
+            box['borderColor'] = borderColor;
+            box['backgroundColor'] = borderColor + '00';
+            console.log(box);
+            boxes.push(box);
+
+            updateAnnotations();
+            updateList();
+        }
+        
+    }
+    document.getElementById("annotation_class_cancle").addEventListener('click',cancleForm)
+    document.getElementById("annotation_class").addEventListener('click',closeForm)
+
+
     async function updateDatabase() {
         res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}})
-            })
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}})
+        })
 
     firstBox = [...boxes]
     updateList()
@@ -370,13 +512,13 @@
             listItem.innerHTML = tmp
             if (box.approved) {
                 const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." checked disabled>
-                <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>
+                <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}"> ${classesname[box.classname]}</span>
                 <div class="text-dark">${box.commnet}</div>`;
                 listItem.innerHTML = tmp
             }
             else {
                 const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." disabled>
-                <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>
+                <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">  ${classesname[box.classname]}</span>
                 <div class="text-dark">${box.commnet}</div>`;
                 listItem.innerHTML = tmp
             }
@@ -387,9 +529,9 @@
 
     function adjustZoom(factor) {
         zoomLevel += factor;
-        zoomLevel = Math.min(Math.max(zoomLevel, 50), 200);
-        image.style.width = `${zoomLevel}%`;
-        zoomLevelSpan.textContent = zoomLevel;
+        zoomLevel = Math.min(Math.max(zoomLevel, 20), 200);
+        image.style.width = `${zoomLevel}vw`;
+        // zoomLevelSpan.textContent = zoomLevel;
 
         // Original dimensions
         const originalWidth = image.naturalWidth;
@@ -402,24 +544,48 @@
         console.log(`Original dimensions: ${originalWidth}x${originalHeight}`);
         console.log(`Displayed dimensions: ${displayedWidth}x${displayedHeight}`);
         updateAnnotations();
+        updateList();
     }
 
     function createAnnotation(box, index) {
         const annotation = document.createElement('div');
         annotation.className = 'annotation';
         annotation.dataset.index = index;
-        
+
         annotation.style.borderColor = box.borderColor;
         annotation.style.backgroundColor = box.backgroundColor
-        if (box.approved){
-        annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} <i class="bi bi-check-circle-fill"></i> </span>`
-        } else {
-        annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} `
-
-        }
+        // if (box.approved) {
+        //     annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} <i class="bi bi-check-circle-fill"></i> </span>`
+        // } else {
+        //     annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} `
+        // }
+        annotation.addEventListener('mousedown', function () {
+            if (mode =='edit') {
+                annotation.classList.toggle('selected');
+            }
+        });
+        annotation.addEventListener('mouseover', function () {
+            if (mode=='edit') {
+                annotation.style.backgroundColor = box.borderColor+'33';
+                dragging = false;
+                console.log(index);
+                annotation.style.zIndex = 999
+            }
             
+        });
+
+
+
         annotation.addEventListener('click', function () {
-            annotation.classList.toggle('selected');
+            if (mode =='edit') {
+                dragging = false;
+                annotation.classList.toggle('selected');
+                if ([... annotation.classList].includes('selected')) {
+                    openForm();
+                } else {
+                    closeForm();
+                }
+            }
         });
 
 
@@ -431,6 +597,9 @@
         ['nw', 'ne', 'sw', 'se', 'm'].forEach(pos => {
             const handle = document.createElement('div');
             handle.className = `resize-handle ${pos}`;
+            if (mode === 'draw'){
+                handle.style.display = 'none';
+            }
             handle.style.position = 'absolute';
             if (pos.includes('n')) handle.style.top = '-4px';
             if (pos.includes('s')) handle.style.bottom = '-4px';
@@ -438,63 +607,201 @@
             if (pos.includes('e')) handle.style.right = '-4px';
             handle.style.width = '8px';
             handle.style.height = '8px';
-            handle.style.backgroundColor = box.borderColor;
+            handle.style.backgroundColor = box.backgroundColor;
             if (pos === 'm') {
-                handle.style.top = '50%';
-                handle.style.left = '50%';
-                handle.style.width = '16px';
-                handle.style.height = '16px';
-                handle.style.transform = 'translate(-50%, -50%)';
-                handle.style.borderRadius = '50%';
+                handle.style.top = '2%';
+                handle.style.left = '2%';
+                handle.style.width = '95%';
+                handle.style.height = '95%';
+                handle.style.backgroundColor = box.backgroundColor
+                // handle.style.transform = 'translate(-50%, -50%)';
+                // handle.style.borderRadius = '50%';
+                handle.addEventListener('click',function () {
+                if (mode =='edit') {
+                    dragging = false;
+                    annotation.classList.toggle('selected');
+                if ([... annotation.classList].includes('selected')) {
+                    openForm();
+                } else {
+                    closeForm();
+                }
             }
+            })
+            }
+            
 
             annotation.appendChild(handle);
         });
-
         container.appendChild(annotation);
     }
+    zoomControl.addEventListener('mousedown', function (event) {
+        if (mode === 'edit') {
+            dragging = true;
+            isDragging = true;
+            const rect = image.getBoundingClientRect();
+            dragStartX = event.clientX - rect.left;
+            dragStartY = event.clientY - rect.top;
+            
+            updateAnnotations()
+        }
+        
+    });
+    zoomControl.addEventListener('mousemove', function (event) {
+        if (dragging) {
+            const rect = image.getBoundingClientRect();
+            const end_x = (event.clientX - rect.left);
+            const end_y = (event.clientY - rect.top);
 
-    image.addEventListener('mousedown', function (event) {
-        drawing = true;
-        const rect = image.getBoundingClientRect();
-        start_x = (event.clientX - rect.left);
-        start_y = (event.clientY - rect.top);
-        console.log(`x=${start_x} , y=${start_y}`);
+            const dx = end_x - dragStartX;
+            const dy = end_y - dragStartY;
+            const tempw = container.style.width 
+            const temph = container.style.height
+            
+            image
+            
+            
+
+            
+            // image.style.position = "";
+            console.log(dx,dy,container.style.left,parseInt(container.style.top));
+            let valuex = parseInt(container.style.left) + dx
+            let valuey = parseInt(container.style.top) + dy
+            console.log(dx,dy,container.style.left,container.style.top,valuex,valuey);
+            container.style.left =  (parseInt(container.style.left) + dx) + "px";
+            container.style.top = (parseInt(container.style.top) + dy) + "px";
+            container.style.width = tempw
+            container.style.height = temph
+            updateAnnotations()
+        }
+        
+    });
+    zoomControl.addEventListener('mouseout', function(event) {
+        dragging=false;
+        updateAnnotations()
+    })
+    zoomControl.addEventListener('mouseup', function(event) {
+        dragging=false;
+        updateAnnotations()
+    })
+    container.addEventListener('mousedown', function (event) {
+        if (mode === 'draw') {
+            drawing = true;
+            const rect = image.getBoundingClientRect();
+            start_x = (event.clientX - rect.left + 13);
+            start_y = (event.clientY - rect.top);
+            console.log(`x=${start_x} , y=${start_y}`);
+        }
     });
 
-    image.addEventListener('mouseup', function (event) {
-        if (!drawing) return;
-        drawing = false;
+    container.addEventListener('mousemove', function (event) {
+        console.log(dragging);
+        if (drawing) {
+            const rect = image.getBoundingClientRect();
+            const end_x = (event.clientX - rect.left );
+            const end_y = (event.clientY - rect.top);
 
-        const rect = image.getBoundingClientRect();
-        const end_x = (event.clientX - rect.left);
-        const end_y = (event.clientY - rect.top);
+            const selectedClass = colorPicker.value - 1;
+            const classname = classesname[selectedClass]
+            const borderColor = colors[selectedClass];
+            const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+
+            const box = {
+                x: Math.min(start_x, end_x) / image.width,
+                y: Math.min(start_y, end_y) / image.height,
+                width: Math.abs(end_x - start_x) / image.width,
+                height: Math.abs(end_y - start_y) / image.height,
+                classname: selectedClass,
+                borderColor: borderColor,
+                backgroundColor: borderColor + '00',
+                approved: false,
+                commnet: ''
+            };
+            if (box.height == 0 || box.width == 0) return;
+
+            console.log(box.width, box.height);
+
+            updateAnnotations();
+            updateList();
+            createAnnotation(box)
+            };
+        
+    });
+    container.addEventListener('mouseout', function (event) {
+        console.log('out');
+        // if (drawing) {
+        //     const rect = image.getBoundingClientRect();
+        //     const end_x = (event.clientX - rect.left );
+        //     const end_y = (event.clientY - rect.top);
+
+        //     const selectedClass = colorPicker.value - 1;
+        //     const classname = classesname[selectedClass]
+        //     const borderColor = colors[selectedClass];
+        //     const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+
+        //     const box = {
+        //         x: Math.min(start_x, end_x) / image.width,
+        //         y: Math.min(start_y, end_y) / image.height,
+        //         width: Math.abs(end_x - start_x) / image.width,
+        //         height: Math.abs(end_y - start_y) / image.height,
+        //         classname: selectedClass,
+        //         borderColor: borderColor,
+        //         backgroundColor: borderColor + '00',
+        //         approved: false,
+        //         commnet: ''
+        //     };
+        //     if (box.height == 0 || box.width == 0) return;
+        //     openForm()
+            
 
 
-        const selectedClass = colorPicker.value - 1;
-        const classname = classesname[selectedClass]
-        const borderColor = colors[selectedClass];
-        const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+        //     boxes.push(box);
+
+        //     updateAnnotations();
+        //     updateList();
+        //     drawing = false
+        //     };
+    });
+
+    container.addEventListener('mouseup', function (event) {
+        if (drawing) {
+            drawing = false;
+            const rect = image.getBoundingClientRect();
+            const end_x = (event.clientX - rect.left);
+            const end_y = (event.clientY - rect.top);
 
 
-        const box = {
-            x: Math.min(start_x, end_x) / image.width,
-            y: Math.min(start_y, end_y) / image.height,
-            width: Math.abs(end_x - start_x) / image.width,
-            height: Math.abs(end_y - start_y) / image.height,
-            classname: selectedClass,
-            borderColor: borderColor,
-            backgroundColor: borderColor + '40',
-            approved: false,
-            commnet:''
-        };
-        if (box.height == 0 || box.width == 0) return;
+            const selectedClass = colorPicker.value - 1;
+            const classname = classesname[selectedClass]
+            const borderColor = colors[selectedClass];
+            const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+
+            
+
+            const box = {
+                x: Math.min(start_x, end_x) / image.width,
+                y: Math.min(start_y, end_y) / image.height,
+                width: Math.abs(end_x - start_x) / image.width,
+                height: Math.abs(end_y - start_y) / image.height,
+                classname: selectedClass,
+                borderColor: borderColor,
+                backgroundColor: borderColor + '00',
+                approved: false,
+                commnet: ''
+            };
+            if (box.height == 0 || box.width == 0) return;
+            openForm()
+            
 
 
-        boxes.push(box);
+            boxes.push(box);
 
-        updateAnnotations();
-        updateList();
+            updateAnnotations();
+            updateList();
+            // createAnnotation(box);
+        }
+        if (dragging) {
+            dragging = false;
+        }
     });
 
     zoomInButton.addEventListener('click', function () {
@@ -504,7 +811,6 @@
     zoomOutButton.addEventListener('click', function () {
         adjustZoom(-10);
     });
-
 
     deleteButton.addEventListener('click', function () {
         // Collect all the selected annotations
@@ -545,6 +851,13 @@
         resizing = false;
         currentHandle = null;
     });
+    zoomControl.addEventListener('wheel', function (event) {
+        if (event.ctrlKey) {
+            adjustZoom(event.deltaY < 0 ? 5 : -5);
+            event.preventDefault();
+        }
+        
+    });
 
     container.addEventListener('mousemove', function (event) {
         if (!resizing || !currentHandle) return;
@@ -581,6 +894,24 @@
                 box.x += deltaX;
                 box.y += deltaY;
         }
+        if (box.x < 0) {
+            box.x = 0
+        }
+        if (box.y < 0) {
+            box.y = 0
+        }
+        if (box.x + box.width > 1 ) {
+            // console.log(box.x , box.width);
+            box.x = 1 - box.width
+            // box.width = 1 - box.x
+            // return
+        }
+        if (box.y + box.height > 1) {
+            // box.height = 1 - box.y
+            box.y = 1 - box.height
+            // return
+        }
+        
 
         updateAnnotations();
         updateList();
@@ -624,9 +955,44 @@
             updateList();
         }
 
+        if (event.key === 'r') {
+            setMode('draw')
+        }
+        if (event.key === 'e') {
+            setMode('edit')
+        }
+        {% if start %}  
+        {% else %}
+        if (event.key === '[') {
+            // setMode('draw')
+            document.getElementById("prev-button").click();
+            
+        }
+        {% endif %}
+        {% if end %} 
+        {% else %}
+        if (event.key === ']') {
+            // setMode('draw')
+            document.getElementById("next-button").click();
+        }
+        
+        {% endif %}
         if (event.ctrlKey && event.key === 's') {
             // console.log('save');
             updateDatabase()
+        }
+        if (event.ctrlKey && event.key === 'enter') {
+            // console.log('save');
+            submitTask()
+            {% if end %} 
+            {% else %}
+            if (event.key === ']') {
+                // setMode('draw')
+                document.getElementById("next-button").click();
+            }
+            
+            {% endif %}
+
         }
         // Check if Ctrl+Z is pressed
         if (event.ctrlKey && event.key === 'z') {
@@ -654,7 +1020,10 @@
             }
         }
     });
-
+    container.style.left = 0+'px'
+    container.style.top = 0+'px'
+    // fun
+    setMode('draw')
 });
 
 </script>
