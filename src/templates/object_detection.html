@@ -525,6 +525,27 @@
                 listItem.innerHTML = tmp
             }
             // listItem.textContent = `${classesname[box.classname]}: x=${(box.x).toFixed(2)}, y=${(box.y).toFixed(2)}, width=${(box.width).toFixed(2)}, height=${box.height.toFixed(2)}, class=${box.classname}`;
+
+            listItem.addEventListener('click', function(e) {
+                const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
+                anno.classList.toggle('selected');
+                if ([... anno.classList].includes('selected')) {
+                    openForm();
+                } else {
+                    closeForm();
+                }
+            })
+            listItem.addEventListener('mouseover', function(e) {
+                const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
+                anno.style.backgroundColor = box.borderColor+'44'
+                listItem.style.backgroundColor = box.borderColor+'44'
+
+            })
+            listItem.addEventListener('mouseout', function(e) {
+                const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
+                anno.style.backgroundColor = box.borderColor+'00'
+                listItem.style.backgroundColor = box.borderColor+'00'
+            })
             annotationList.appendChild(listItem);
         });
     }
