@@ -64,8 +64,8 @@
 
     .annotation {
         position: absolute;
-        border: 2px solid red;
-        background-color: rgba(255, 0, 0, 0.2);
+        border: 2px solid black;
+        background-color: rgba(0, 0, 0, 0.1);
         z-index: 2;
     }
 
@@ -623,10 +623,12 @@
                 if (mode == 'edit') {
                     const li = document.querySelector(`li[data-index="${index}"]`);
                     li.style.backgroundColor = box.borderColor + '00';
+
+
+                    console.log("mouseout box");
                 }
 
             });
-
             annotation.addEventListener('click', function () {
                 if (mode == 'edit') {
                     dragging = false;
@@ -638,8 +640,6 @@
                     }
                 }
             });
-
-
             annotation.style.left = `${box.x * image.width}px`;
             annotation.style.top = `${box.y * image.height}px`;
             annotation.style.width = `${box.width * image.width}px`;
@@ -685,6 +685,18 @@
             container.appendChild(annotation);
         }
 
+        function createCurrentBox() {
+            const annotation = document.createElement('div');
+            annotation.className = 'annotation';
+            annotation.style.borderColor = 'fff';
+            // annotation.style.backgroundColor = current_box.backgroundColor
+            annotation.style.left = `${current_box.x * image.width}px`;
+            annotation.style.top = `${current_box.y * image.height}px`;
+            annotation.style.width = `${current_box.width * image.width}px`;
+            annotation.style.height = `${current_box.height * image.height}px`;
+            container.appendChild(annotation);
+        }
+
         zoomControl.addEventListener('mousedown', function (event) {
             if (mode === 'edit') {
                 dragging = true;
@@ -697,6 +709,7 @@
             }
 
         });
+    
         zoomControl.addEventListener('mousemove', function (event) {
             if (dragging) {
                 const rect = image.getBoundingClientRect();
@@ -721,23 +734,17 @@
             }
 
         });
-        zoomControl.addEventListener('mouseout', function (event) {
-            dragging = false;
-            updateAnnotations()
-        })
-        zoomControl.addEventListener('mouseup', function (event) {
-            dragging = false;
-            updateAnnotations()
-        })
+        
+        // zoomControl.addEventListener('mouseout', function (event) {
+        //     dragging = false;
+        //     updateAnnotations()
+        // })
 
-        container.addEventListener('mouseover', function (event) {
-            console.log('over');
-            if (mode === 'draw') {
-                this.style.cursor = 'default';
-            } else if (mode === 'edit') {
-                this.style.cursor = 'pointer';
-            }
-        });
+        // zoomControl.addEventListener('mouseup', function (event) {
+        //     dragging = false;
+        //     updateAnnotations()
+        // })
+
         container.addEventListener('mousedown', function (event) {
             if (mode === 'draw') {
                 drawing = true;
@@ -749,7 +756,6 @@
         });
 
         container.addEventListener('mousemove', function (event) {
-            console.log(dragging);
             if (drawing) {
                 const rect = image.getBoundingClientRect();
                 const end_x = (event.clientX - rect.left);
@@ -760,24 +766,27 @@
                 const borderColor = colors[selectedClass];
                 const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
 
-                const box = {
+                current_box = {
                     x: Math.min(start_x, end_x) / image.width,
                     y: Math.min(start_y, end_y) / image.height,
                     width: Math.abs(end_x - start_x) / image.width,
                     height: Math.abs(end_y - start_y) / image.height,
-                    classname: selectedClass,
-                    borderColor: borderColor,
-                    backgroundColor: borderColor + '00',
+                    // classname: selectedClass,
+                    borderColor: "fff",
+                    backgroundColor: "fff" + '00',
                     approved: false,
                     commnet: ''
                 };
-                if (box.height == 0 || box.width == 0) return;
 
-                console.log(box.width, box.height);
+                if (current_box.height == 0 || current_box.width == 0) return;
 
+                // console.log(current_box.width, current_box.height);
+
+                
                 updateAnnotations();
                 updateList();
-                createAnnotation(box)
+                createCurrentBox()
+                
             };
 
         });
@@ -823,14 +832,10 @@
                 const rect = image.getBoundingClientRect();
                 const end_x = (event.clientX - rect.left);
                 const end_y = (event.clientY - rect.top);
-
-
                 const selectedClass = colorPicker.value - 1;
                 const classname = classesname[selectedClass]
                 const borderColor = colors[selectedClass];
                 const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
-
-
 
                 const box = {
                     x: Math.min(start_x, end_x) / image.width,
@@ -844,12 +849,9 @@
                     commnet: ''
                 };
                 if (box.height == 0 || box.width == 0) return;
+
                 openForm()
-
-
-
                 boxes.push(box);
-
                 updateAnnotations();
                 updateList();
                 // createAnnotation(box);
@@ -1021,9 +1023,11 @@
 
             if (event.key === 'r') {
                 setMode('draw')
+                image.style.cursor = 'crosshair';
             }
             if (event.key === 'e') {
                 setMode('edit')
+                image.style.cursor = 'move';
             }
             {% if start %}
             {% else %}
