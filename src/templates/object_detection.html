@@ -588,6 +588,7 @@
             updateList();
         }
 
+        // Create Box
         function createAnnotation(box, index) {
             const annotation = document.createElement('div');
             annotation.className = 'annotation';
@@ -683,6 +684,7 @@
 
             container.appendChild(annotation);
         }
+
         zoomControl.addEventListener('mousedown', function (event) {
             if (mode === 'edit') {
                 dragging = true;
@@ -740,7 +742,7 @@
             if (mode === 'draw') {
                 drawing = true;
                 const rect = image.getBoundingClientRect();
-                start_x = (event.clientX - rect.left + 13);
+                start_x = (event.clientX - rect.left);
                 start_y = (event.clientY - rect.top);
                 console.log(`x=${start_x} , y=${start_y}`);
             }
@@ -951,11 +953,11 @@
                     // const deltaY = (y - (box.y + box.height / 2));
                     // box.x += deltaX;
                     // box.y += deltaY;
-                    box.x +=  x - start_x;
-                    box.y +=  y - start_y;
+                    box.x += x - start_x;
+                    box.y += y - start_y;
                     start_x = x
                     start_y = y
-                    
+
             }
             if (box.x < 0) {
                 box.x = 0
@@ -982,7 +984,6 @@
 
         // Listen for keyboard shortcuts for undo (Ctrl+Z) and redo (Ctrl+Shift+Z)
         document.addEventListener('keydown', function (event) {
-
             if (!isNaN(event.key) && event.key >= 1 && event.key <= colorPicker.options.length) {
                 colorPicker.value = event.key;
 
@@ -1083,6 +1084,7 @@
                 }
             }
         });
+        
         container.style.left = 0 + 'px'
         container.style.top = 0 + 'px'
         // fun
