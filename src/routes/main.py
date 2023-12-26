@@ -102,12 +102,14 @@ def project_task(id):
     print(start, end)
     if project.type == "det":
         if permission == "reviewer":
+            tasks = [t for t in tasks if t.finished or t.approved ]
             return render_template(
                 "object_detection_review.html",
                 project=project,
                 task=task,
                 start=start,
                 end=end,
+                tasks=tasks,
             )
         return render_template(
             "object_detection.html",

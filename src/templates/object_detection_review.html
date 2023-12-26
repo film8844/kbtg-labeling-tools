@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_annotation.html" %}
 {% block css %}
 <style>
     #vertical-guide,
@@ -29,41 +29,48 @@
 
 
     #image-container {
-        position: relative;
-        height: 90vh;
-
-        background-color: #fff;
+        position: absolute;
+        /* height: 75vh; */
+        /* overflow: scroll; */
+        /* background-color: #fff; */
     }
 
-    #image-container {
+    #zoom-control {
         position: relative;
-        height: 100%;
         background-color: #fff;
+        height: 75vh;
+        overflow: hidden;
     }
 
-    /* #image-container :hover {
+    #image-container :hover {
         cursor: crosshair;
-    } */
+    }
 
     #zoom-controls {
         height: 100%;
         /* overflow: auto; */
     }
 
-    /* #image :hover {
-        cursor: crosshair;
-    } */
+    #image {
+        position: relative;
+
+    }
+
 
     .annotation {
         position: absolute;
-        border: 2px solid red;
-        background-color: rgba(255, 0, 0, 0.2);
+        border: 2px solid black;
+        background-color: rgba(0, 0, 0, 0.1);
         z-index: 2;
     }
 
-    .annotation :hover {
-        cursor: pointer;
-    }
+    /* .annotation :hover {
+        cursor: pointer !important;
+    } */
+
+    /* .annotation :hover .resize-handle {
+        display: block;
+    } */
 
     .annotation.selected {
         border: 2px dashed gray;
@@ -74,14 +81,24 @@
     }
 
     .resize-handle {
-        cursor: pointer;
-        z-index: 2;
+        /* cursor: pointer; */
+        z-index: 4;
+    }
+
+    .form-popup {
+        display: none;
+        position: absolute;
+
+        /* bottom: 20vh;
+        right: 20vw; */
+        border: 3px solid #f1f1f1;
+        z-index: 9;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="pagetitle d-flex justify-content-between align-content-center">
+<div class="pagetitle mb-0 d-flex justify-content-between align-content-center">
     <div class="pagetitle">
         <h1>Projects : {{project.name}} (Reviewer)</h1>
         <nav>
@@ -101,14 +118,13 @@
         <a type="button" href="{{url_for('main.project_task',id=task.id+1)}}" id="next-button"
             class="btn btn-primary {% if end %} disabled {% endif %}">Next<i class="bi bi-chevron-right"></i> </a>
         <!-- <button type="button" id="save-button" class="btn btn-primary "><i class="bx bxs-save"></i> Save</button> -->
-        <button type="button" id="unsubmit-button" class="btn btn-warning "><i class="bi bi-bookmark-x-fill"></i>
+        <button type="button" id="unsubmit-button" class="btn btn-warning" {%if not task.finished %} disabled {% endif
+            %}><i class="bi bi-bookmark-x-fill"></i>
             Disapprove</button>
-        <button type="button" id="submit-button" class="btn btn-success"><i class="bi bi-bookmark-check-fill"></i>
+        <button type="button" id="submit-button" class="btn btn-success" {%if not task.finished %} disabled {% endif
+            %}><i class="bi bi-bookmark-check-fill"></i>
             Approve</button>
     </div>
-</div>
-
-<section class=" section">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -117,93 +133,105 @@
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-
     {% endif %}
     {% endfor %}
     {% endif %}
     {% endwith %}
-    <div class="row">
-        <div class="col-2 mt-3">
-            <div class="col-lg-12">
+</div>
 
-                <div class="card ">
-                    <div style="height: 30vh;overflow: auto;" id="annotation-list" class="card-body ">
-                        <h5 class="card-title">Annotation List</h5>
-                        <ul class="list-group" id="list">
-                        </ul>
-                        <!-- <ol id="list">
-                        </ol> -->
-                    </div>
-                </div>
-
-            </div>
-            <div class="col-lg-12">
-
-                <div class="card">
-                    <div id="annotation-list" class="card-body">
-                        <h5 class="card-title">Project info</h5>
-                        {{project.labels_info}}
-                    </div>
-                </div>
-
-            </div>
+<div class="row m-0">
+    <div class="col-10 p-0" style="height: 80vh" id="zoom-control">
+        <div id="vertical-guide"></div>
+        <div id="horizontal-guide"></div>
+        <div id="image-container" class="w-100 h-100">
+            <img id="image" draggable="false" src="../{{task.path}}" alt="Image for annotation">
+            <div id="annotation-list"></div>
         </div>
-        <div class="col-10">
-            <div id="image-container">
-                <div id="vertical-guide"></div>
-                <div id="horizontal-guide"></div>
-                <div id="zoom-controls">
-                    <div id="annotation-list"></div>
-                    <img id="image" draggable="false" src="../{{task.path}}" alt="Image for annotation">
-                </div>
-            </div>
-        </div>
-        <span></span>
     </div>
-    <!-- Gallery -->
+    <div class="col-2 p-1">
+        <div class="card m-1">
+            <h5 class="card-title m-2">Annotation List</h5>
+            <div style="height: 35vh;overflow: auto;" id="annotation-list" class="card-body p-0">
 
-    <!-- Vertically centered Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">New message</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="recipient-name" class="col-form-label">ID:</label>
-                            <input type="text" class="form-control" id="recipient-name" disabled>
-                        </div>
-                        <div class="mb-3">
-                            <label for="message-text" class="col-form-label">comment:</label>
-                            <textarea class="form-control" id="message-text"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="comment_btn" >Send message</button>
-                </div>
+                <div class="card-body p-1"></div>
+                <ul class="list-group" id="list">
+                </ul>
+            </div>
+        </div>
+        <div class="card m-1">
+            <div style="height: 45vh;overflow: auto;" id="annotation-list" class="card-body p-1">
+                <h5 class="card-title m-2">Task List</h5>
+                <ul class="list-group" id="list">
+                    {% for t in tasks %}
+                    <li
+                        class="list-group-item text-nowrap text-sm overflow-auto {% if t.id == task.id  %}active{% endif %}">
+                        {% if t.approved %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i>
+                            Approved</span>
+                        {% elif t.finished %}
+                        <span class="badge bg-success">Completed</span>
+                        {% elif t.label_by %}
+                        <span class="badge bg-warning">In Progress</span>
+                        {% else %}
+                        <span class="badge bg-secondary-light">Not Started</span>
+                        {% endif %}
+                        {% if t.id == task.id %}
+                        <p>{{t.path.split('/')[-1]}} </p>
+                        {% else %}
+                        <a href="{{url_for('main.project_task',id=t.id)}}">{{t.path.split('/')[-1] }} </a>
+                        {% endif %}
+
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
-    <!-- End Vertically centered Modal-->
 
-    <!-- Gallery -->
+    <span></span>
+</div>
+<!-- Gallery -->
+
+<!-- Vertically centered Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">New message</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="recipient-name" class="col-form-label">ID:</label>
+                        <input type="text" class="form-control" id="recipient-name" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message-text" class="col-form-label">comment:</label>
+                        <textarea class="form-control" id="message-text"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="comment_btn">Send message</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Vertically centered Modal-->
+
+<!-- Gallery -->
 
 
 
-
-</section>
 
 {% endblock %}
 
 {% block script %}
 <!-- <script src="../static/scripts/drowing.js"></script> -->
 <script>
-    
+
     document.addEventListener('DOMContentLoaded', function () {
         const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
         const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
@@ -219,7 +247,7 @@
         const submitButton = document.getElementById('submit-button');
         const unsubmitButton = document.getElementById('unsubmit-button');
         const myModal = document.getElementById('verticalycentered');
-        const comment_btn = document.getElementById('comment_btn');comment_btn
+        const comment_btn = document.getElementById('comment_btn'); comment_btn
         let resizing = false;
         const popup = container.querySelector('.popup');
         let currentHandle = null;
@@ -243,32 +271,31 @@
     unsubmitButton.addEventListener('click', unsubmitTask)
 
     const exampleModal = document.getElementById('exampleModal')
-    comment_btn.addEventListener('click',save_comment)
+    comment_btn.addEventListener('click', save_comment)
     if (exampleModal) {
-    exampleModal.addEventListener('show.bs.modal', event => {
-        // Button that triggered the modal
-        const button = event.relatedTarget
-        // Extract info from data-bs-* attributes
-        const recipient = button.getAttribute('data-bs-whatever')
-        // If necessary, you could initiate an Ajax request here
-        // and then do the updating in a callback.
+        exampleModal.addEventListener('show.bs.modal', event => {
+            // Button that triggered the modal
+            const button = event.relatedTarget
+            // Extract info from data-bs-* attributes
+            const recipient = button.getAttribute('data-bs-whatever')
 
-        // Update the modal's content.
-        const modalTitle = exampleModal.querySelector('.modal-title')
-        const modalBodyInput = exampleModal.querySelector('.modal-body input')
 
-        modalTitle.textContent = `Comment to ${recipient}`
-        modalBodyInput.value = recipient
-    })
+            // Update the modal's content.
+            const modalTitle = exampleModal.querySelector('.modal-title')
+            const modalBodyInput = exampleModal.querySelector('.modal-body input')
+
+            modalTitle.textContent = `Comment to ${recipient}`
+            modalBodyInput.value = recipient
+        })
     }
     function save_comment() {
         const id = document.getElementById('recipient-name');
         const comment = document.getElementById('message-text');
-        console.log(id.value,comment.value);
+        console.log(id.value, comment.value);
         console.log(boxes[id.value]);
         boxes[id.value]['commnet'] = comment.value;
         updateList()
-        
+
     }
     // Fetch boxes from the API
     function fetchBoxes() {
@@ -318,6 +345,7 @@
         })
         firstBox = [...boxes]
         console.log({ "label": boxes, "approved": true })
+        window.location.reload()
     }
 
     async function unsubmitTask() {
@@ -330,11 +358,9 @@
         })
         firstBox = [...boxes]
         console.log({ "label": boxes, "approved": false })
+        window.location.reload()
     }
 
-    function test() {
-        alert('test')
-    }
     function updateAnnotations() {
 
         const existingAnnotations = document.querySelectorAll('.annotation');
