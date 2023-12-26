@@ -34,6 +34,7 @@
         /* overflow: scroll; */
         /* background-color: #fff; */
     }
+
     #zoom-control {
         position: relative;
         background-color: #fff;
@@ -53,10 +54,11 @@
     /* #image :hover {
         cursor: crosshair;
         /* z-index: 999 !important; */
-    } */
-    #image {
+    }
+
+    */ #image {
         position: relative;
-        
+
     }
 
 
@@ -70,6 +72,7 @@
     .annotation :hover {
         cursor: pointer !important;
     }
+
     .annotation :hover .resize-handle {
         display: block;
     }
@@ -86,6 +89,7 @@
         cursor: pointer;
         z-index: 4;
     }
+
     .form-popup {
         display: none;
         position: fixed;
@@ -99,43 +103,36 @@
 
 {% block content %}
 
-
-<!-- <div class="row">
-    <div class="col-2" style="background-color: yellow;">test</div>
-    <div class="col-10">
-        <div class="row">
-            <div class="col-10" style="background-color: red;">test</div>
-            <div class="col-2" style="background-color: blue;">
-            <div class="card">
-                test
-            </div>
-            </div>
-        </div>
-    </div>
-</div> -->
 <div class="row">
+    <!-- Tools -->
     <div class="col-1">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body align-center text-center">
                     <!-- <h5 class="card-title">Label</h5> -->
                     <div class="mt-2">
-                        <button id="draw-mode" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="R: Rectangle Mode"><i class="bx bx-selection"></i></button>
+                        <button id="draw-mode" class="btn btn-primary" data-bs-toggle="tooltip"
+                            data-bs-placement="right" title="R: Rectangle Mode"><i class="bx bx-selection"></i></button>
                     </div>
                     <div class="mt-2">
-                        <button id="edit-mode" class="btn btn-primary"  data-bs-toggle="tooltip" data-bs-placement="right" title="E: Edit Mode"><i class="bx bxs-edit"></i></button>
+                        <button id="edit-mode" class="btn btn-primary" data-bs-toggle="tooltip"
+                            data-bs-placement="right" title="E: Edit Mode"><i class="bx bxs-edit"></i></button>
                     </div>
                     <div class="mt-2">
-                        <button id="zoom-in" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="Zoom in"><i class="bi bi-zoom-in"></i></button>
+                        <button id="zoom-in" class="btn btn-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="right" title="Zoom in"><i class="bi bi-zoom-in"></i></button>
                     </div>
                     <div class="mt-2">
-                        <button id="zoom-out" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="Zoome out"><i class="bi bi-zoom-out"></i></button>
+                        <button id="zoom-out" class="btn btn-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="right" title="Zoome out"><i class="bi bi-zoom-out"></i></button>
                     </div>
                     <div class="mt-2">
-                        <button id="delete-button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="right" title="Delete selection"><i class="bx bxs-trash"></i></button>
+                        <button id="delete-button" class="btn btn-danger" data-bs-toggle="tooltip"
+                            data-bs-placement="right" title="Delete selection"><i class="bx bxs-trash"></i></button>
                     </div>
                     <div class="mt-2">
-                        <button id="reset-button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="right" title="Reset"><i class="bx bx-revision"></i></button>
+                        <button id="reset-button" class="btn btn-danger" data-bs-toggle="tooltip"
+                            data-bs-placement="right" title="Reset"><i class="bx bx-revision"></i></button>
                     </div>
                     <!-- <h5 class="card-title">Zoom Level: <span id="zoom-level">100</span>%</h5> -->
                     <!-- <div id="zoom-controls" class="mb-2">
@@ -145,27 +142,27 @@
             </div>
         </div>
     </div>
+
+    <!-- Annotation  -->
     <div class="col-11">
         <div class="row">
             <div class="col-10 p-0" id="zoom-control">
                 <div id="vertical-guide"></div>
                 <div id="horizontal-guide"></div>
                 <div id="image-container">
-                    
+
                     <img id="image" draggable="false" src="../{{task.path}}" alt="Image for annotation">
                     <div id="annotation-list"></div>
-                    
+
                 </div>
-                
-                
-                
+
             </div>
             <div class="col-2 p-1">
                 <div class="col-lg-12">
                     <div class="card">
                         <h5 class="card-title m-2">Annotation List</h5>
                         <div style="height: 33vh;overflow: auto;" id="annotation-list" class="card-body p-0">
-                            
+
                             <div class="card-body p-1"></div>
                             <ul class="list-group" id="list">
                             </ul>
@@ -178,9 +175,11 @@
                             <h5 class="card-title m-2">Task List</h5>
                             <ul class="list-group" id="list">
                                 {% for t in tasks %}
-                                <li class="list-group-item text-nowrap text-sm overflow-auto {% if t.id == task.id  %}active{% endif %}">
+                                <li
+                                    class="list-group-item text-nowrap text-sm overflow-auto {% if t.id == task.id  %}active{% endif %}">
                                     {% if t.approved %}
-                                    <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                                    <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i>
+                                        Approved</span>
                                     {% elif t.finished %}
                                     <span class="badge bg-success">Completed</span>
                                     {% elif t.label_by %}
@@ -188,12 +187,12 @@
                                     {% else %}
                                     <span class="badge bg-secondary-light">Not Started</span>
                                     {% endif %}
-                                    {% if t.id == task.id  %}
+                                    {% if t.id == task.id %}
                                     <p>{{t.path.split('/')[-1]}} </p>
                                     {% else %}
                                     <a href="{{url_for('main.project_task',id=t.id)}}">{{t.path.split('/')[-1] }} </a>
                                     {% endif %}
-                                    
+
                                 </li>
                                 {% endfor %}
                             </ul>
@@ -201,6 +200,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -220,9 +220,10 @@
         <button class="btn btn-danger" id="annotation_class_cancle">Cancle</button>
         <button class="btn btn-success" id="annotation_class">Finish</button>
     </div>
-    
-    
+
+
 </div>
+
 <div class="pagetitle d-flex mt-auto justify-content-between align-content-center">
     <div class="pagetitle">
         <h1>Projects : {{project.name}}</h1>
@@ -237,11 +238,15 @@
     </div>
     <div>
         <a type="button" href="{{url_for('main.project_task',id=task.id-1)}}" id="prev-button"
-            class="btn btn-primary {% if start %} disabled {% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="[ : Previous task"><i class="bi bi-chevron-left"></i>Prev </a>
+            class="btn btn-primary {% if start %} disabled {% endif %}" data-bs-toggle="tooltip" data-bs-placement="top"
+            title="[ : Previous task"><i class="bi bi-chevron-left"></i>Prev </a>
         <a type="button" href="{{url_for('main.project_task',id=task.id+1)}}" id="next-button"
-            class="btn btn-primary {% if end %} disabled {% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="] : Next task">Next<i class="bi bi-chevron-right"></i> </a>
-        <button type="button" id="save-button" class="btn btn-primary " data-bs-toggle="tooltip" data-bs-placement="top" title="crl + s : Save"><i class="bx bxs-save"></i> Save</button>
-        <button type="button" id="submit-button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="crl + enter : Submit"><i class="bx bxs-save"></i> Submit</button>
+            class="btn btn-primary {% if end %} disabled {% endif %}" data-bs-toggle="tooltip" data-bs-placement="top"
+            title="] : Next task">Next<i class="bi bi-chevron-right"></i> </a>
+        <button type="button" id="save-button" class="btn btn-primary " data-bs-toggle="tooltip" data-bs-placement="top"
+            title="crl + s : Save"><i class="bx bxs-save"></i> Save</button>
+        <button type="button" id="submit-button" class="btn btn-success" data-bs-toggle="tooltip"
+            data-bs-placement="top" title="crl + enter : Submit"><i class="bx bxs-save"></i> Submit</button>
     </div>
 </div>
 {% endblock %}
@@ -249,7 +254,29 @@
 {% block script %}
 <!-- <script src="../static/scripts/drowing.js"></script> -->
 <script>
-    
+    localStorage.setItem("colors", JSON.stringify([{% for color in project.labels_info['colors'] %}'{{color}}', {% endfor %}]));
+    localStorage.setItem("classname", JSON.stringify([{% for color in project.labels_info['classname'] %}'{{color}}', {% endfor %}]));
+    // Fetch boxes from the API
+    function fetchBoxes() {
+        fetch(`{{url_for('api.get_task',id=task.id)}}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                boxes = [...data]; // Assign fetched boxes to the boxes array
+                firstBox = [...data]
+                updateAnnotations();
+                updateList();
+            })
+            .catch(error => {
+                console.error('Failed fetching boxes:', error);
+            });
+    }
+</script>
+<script>
     document.addEventListener('DOMContentLoaded', function () {
         const image = document.getElementById('image');
         const container = document.getElementById('image-container');
@@ -267,718 +294,579 @@
         let resizing = false;
         let currentHandle = null;
         let confirmed_box = false;
-        let current_box,mode ;
+        let current_box, mode;
 
         const R_mode = document.getElementById('draw-mode');
         const E_mode = document.getElementById('edit-mode');
 
-        const colors = [{% for color in project.labels_info['colors'] %}'{{color}}', {% endfor %}]
-        const classesname = [{% for color in project.labels_info['classname'] %}'{{color}}', {% endfor %}]
+        const colors = JSON.parse(localStorage.getItem("colors"))
+        const classesname = JSON.parse(localStorage.getItem("classname"))
 
-        
-    let zoomLevel = 100;
-    let drawing = false;
-    let start_x = 0;
-    let start_y = 0;
-    let boxes = [];
-    let firstBox = [];
+        console.log("Colors", colors);
 
-    let undoStack = [];
+        let zoomLevel = 100;
+        let drawing = false;
+        let start_x = 0;
+        let start_y = 0;
+        let boxes = [];
+        let firstBox = [];
 
-    const verticalGuide = document.getElementById('vertical-guide');
-    const horizontalGuide = document.getElementById('horizontal-guide');
+        let undoStack = [];
 
-    let dragging = false; // To know if a box is being dragged
-    let draggedBox = null; // Reference to the box being dragged
-    let offsetX = 0; // To store the initial X offset
-    let offsetY = 0; // To store the initial Y offset
+        const verticalGuide = document.getElementById('vertical-guide');
+        const horizontalGuide = document.getElementById('horizontal-guide');
 
+        let dragging = false; // To know if a box is being dragged
+        let draggedBox = null; // Reference to the box being dragged
+        let offsetX = 0; // To store the initial X offset
+        let offsetY = 0; // To store the initial Y offset
 
-    zoomControl.addEventListener('mousemove', function (event) {
-        if (mode != 'draw') {
+        saveButton.addEventListener('click', updateDatabase)
+        submitButton.addEventListener('click', submitTask)
+
+        // Guild line
+        zoomControl.addEventListener('mousemove', function (event) {
+            if (mode != 'draw') {
+                verticalGuide.style.display = 'none';
+                horizontalGuide.style.display = 'none';
+                return;
+            };
+            const rect = zoomControl.getBoundingClientRect();
+            const xPos = event.clientX - rect.left;
+            const yPos = event.clientY - rect.top;
+
+            verticalGuide.style.left = xPos + 'px';
+            horizontalGuide.style.top = yPos + 'px';
+            verticalGuide.style.display = 'block';
+            horizontalGuide.style.display = 'block';
+        });
+
+        // hind Guild line
+        zoomControl.addEventListener('mouseleave', function () {
             verticalGuide.style.display = 'none';
             horizontalGuide.style.display = 'none';
-            return;
-        };
-        const rect = zoomControl.getBoundingClientRect();
-        const xPos = event.clientX - rect.left;
-        const yPos = event.clientY - rect.top;
+        });
 
-        verticalGuide.style.left = xPos + 'px';
-        horizontalGuide.style.top = yPos + 'px';
-        verticalGuide.style.display = 'block';
-        horizontalGuide.style.display = 'block';
-    });
+        // Fetch boxes from the API
+        function fetchBoxes() {
+            fetch(`{{url_for('api.get_task',id=task.id)}}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    boxes = [...data]; // Assign fetched boxes to the boxes array
+                    firstBox = [...data]
+                    updateAnnotations();
+                    updateList();
+                })
+                .catch(error => {
+                    console.error('Failed fetching boxes:', error);
+                });
+        }
 
-    container.addEventListener('mousemove', function (event) {
-        event.preventDefault();
+        fetchBoxes();
 
-        if (!dragging || !draggedBox) return;
-        const containerRect = container.getBoundingClientRect();
-        const newX = (event.clientX - containerRect.left) - offsetX;
-        const newY = (event.clientY - containerRect.top) - offsetY;
-
-        draggedBox.x = newX / image.width;
-        draggedBox.y = newY / image.height;
-
-        updateAnnotations();
-        updateList()
-    });
-
-    container.addEventListener('mouseleave', function () {
-        verticalGuide.style.display = 'none';
-        horizontalGuide.style.display = 'none';
-    });
-
-    saveButton.addEventListener('click', updateDatabase)
-    submitButton.addEventListener('click', submitTask)
-
-    // Fetch boxes from the API
-    function fetchBoxes() {
-        fetch(`{{url_for('api.get_task',id=task.id)}}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+        function setMode(newMode) {
+            mode = newMode;
+            if (mode == 'draw') {
+                R_mode.classList.add('disabled');
+                E_mode.classList.remove('disabled');
+                // console.log(document.getElementsByClassName('resize-handle'));
+                let collect = document.getElementsByClassName('resize-handle')
+                for (let i = 0; i < collect.length; i++) {
+                    collect[i].style.display = 'none'
                 }
-                return response.json();
-            })
-            .then(data => {
-                boxes = [...data]; // Assign fetched boxes to the boxes array
-                firstBox = [...data]
+            }
+            if (mode == 'edit') {
+                R_mode.classList.remove('disabled');
+                E_mode.classList.add('disabled');
+                let collect = document.getElementsByClassName('resize-handle')
+                for (let i = 0; i < collect.length; i++) {
+                    collect[i].style.display = 'block'
+                }
+            }
+        }
+
+        R_mode.addEventListener('click', function (e) { setMode('draw') });
+        E_mode.addEventListener('click', function (e) { setMode('edit') });
+
+        function openForm() {
+            document.getElementById("popup").style.display = "block";
+            document.getElementById("popup").style.left = event.clientX;
+            document.getElementById("popup").style.top = event.clientY;
+        }
+        function cancleForm() {
+            document.getElementById("popup").style.display = "none";
+            let box = boxes.pop(-1);
+
+            updateAnnotations();
+            updateList();
+        }
+        function closeForm() {
+            if (mode == 'edit') {
+                document.getElementById("popup").style.display = "none";
+                const selectedClass = colorPicker.value - 1;
+                const classname = classesname[selectedClass]
+                const borderColor = colors[selectedClass];
+
+                const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+                const selectedAnnotations = document.querySelectorAll('.annotation.selected');
+                const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
+
+                let box = boxes[indicesToDelete.splice(-1)]
+                box['classname'] = selectedClass;
+                box['borderColor'] = borderColor;
+                box['backgroundColor'] = borderColor + '00';
+                console.log(box);
+                // boxes.push(box);
+
                 updateAnnotations();
                 updateList();
+            } else {
+                document.getElementById("popup").style.display = "none";
+                const selectedClass = colorPicker.value - 1;
+                const classname = classesname[selectedClass]
+                const borderColor = colors[selectedClass];
+                const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+                let box = boxes.pop(-1);
+                // if (mode === 'edit') {
+                //     const selectedAnnotations = document.querySelectorAll('.annotation.selected');
+                //     const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
+                //     console.log(indicesToDelete);
+                //     // box = boxes[indicesToDelete.slice(-1)]
+                //     let box = boxes.pop(indicesToDelete.slice(0));
+                // } else {
+                //     let box = boxes.pop(-1);
+                // }
 
+
+
+                box['classname'] = selectedClass;
+                box['borderColor'] = borderColor;
+                box['backgroundColor'] = borderColor + '00';
+                console.log(box);
+                boxes.push(box);
+
+                updateAnnotations();
+                updateList();
+            }
+
+        }
+        document.getElementById("annotation_class_cancle").addEventListener('click', cancleForm)
+        document.getElementById("annotation_class").addEventListener('click', closeForm)
+
+        function arraysHaveSameContent(arr1, arr2) {
+            if (arr1.length !== arr2.length) return false;
+            return arr1.slice().sort().every((value, index) => value === arr2.slice().sort()[index]);
+        }
+
+        // Save
+        async function updateDatabase() {
+            res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "label": boxes })
             })
-            .catch(error => {
-                console.error('Failed fetching boxes:', error);
+
+            firstBox = [...boxes]
+            updateList()
+            console.log({
+                "label": boxes
+            })
+        }
+
+        // Submit
+        async function submitTask() {
+            res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "label": boxes, "finished": true }),
+            })
+            firstBox = [...boxes]
+            console.log({
+                "label": boxes, "finished": true
+            })
+            window.location.reload();
+        }
+
+        function updateAnnotations() {
+            const existingAnnotations = document.querySelectorAll('.annotation');
+            existingAnnotations.forEach((annotation) => {
+                annotation.remove();
             });
 
-    }
+            boxes.forEach((box, index) => createAnnotation(box, index));
+        }
 
-    // Assuming you have the imageId somewhere, you can call this function
-    fetchBoxes();
-
-    function setMode(newMode) {
-        mode = newMode;
-        if (mode == 'draw') {
-            R_mode.classList.add('disabled');
-            E_mode.classList.remove('disabled');
-            // console.log(document.getElementsByClassName('resize-handle'));
-            let collect = document.getElementsByClassName('resize-handle')
-            for (let i = 0; i < collect.length; i++) {
-                collect[i].style.display = 'none'
+        function updateList() {
+            if (arraysHaveSameContent(boxes, firstBox)) {
+                saveButton.classList.add('disabled');
+                // console.log(saveButton.classList)
+                console.log('disabled')
+                console.log(`box`);
+                console.log(boxes);
+                console.log(`firstBox`);
+                console.log(firstBox);
+            } else {
+                saveButton.classList.remove('disabled');
+                console.log('show')
+                console.log(`box`);
+                console.log(boxes);
+                console.log(`firstBox`);
+                console.log(firstBox);
             }
-        }
-        if (mode == 'edit') {
-            R_mode.classList.remove('disabled');
-            E_mode.classList.add('disabled');
-            let collect = document.getElementsByClassName('resize-handle')
-            for (let i = 0; i < collect.length; i++) {
-                collect[i].style.display = 'block'
-            }
-        }
-    }
-    R_mode.addEventListener('click', function(e) {setMode('draw')});
-    E_mode.addEventListener('click', function(e) {setMode('edit')} );
-    function openForm() {
-        document.getElementById("popup").style.display = "block";
-        document.getElementById("popup").style.left = event.clientX;
-        document.getElementById("popup").style.top = event.clientY;
-    }
-    function cancleForm() {
-        document.getElementById("popup").style.display = "none";
-        let box = boxes.pop(-1);
-
-        updateAnnotations();
-        updateList();
-    }
-    function closeForm() {
-        if (mode == 'edit') {
-            document.getElementById("popup").style.display = "none";
-            const selectedClass = colorPicker.value - 1;
-            const classname = classesname[selectedClass]
-            const borderColor = colors[selectedClass];
-
-            const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
-            const selectedAnnotations = document.querySelectorAll('.annotation.selected');
-            const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
-            
-            let box = boxes[indicesToDelete.splice(-1)]
-            box['classname'] = selectedClass;
-            box['borderColor'] = borderColor;
-            box['backgroundColor'] = borderColor + '00';
-            console.log(box);
-            // boxes.push(box);
-
-            updateAnnotations();
-            updateList();
-        } else {
-            document.getElementById("popup").style.display = "none";
-            const selectedClass = colorPicker.value - 1;
-            const classname = classesname[selectedClass]
-            const borderColor = colors[selectedClass];
-            const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
-            let box = boxes.pop(-1);
-            // if (mode === 'edit') {
-            //     const selectedAnnotations = document.querySelectorAll('.annotation.selected');
-            //     const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
-            //     console.log(indicesToDelete);
-            //     // box = boxes[indicesToDelete.slice(-1)]
-            //     let box = boxes.pop(indicesToDelete.slice(0));
-            // } else {
-            //     let box = boxes.pop(-1);
-            // }
-
-            
-
-            box['classname'] = selectedClass;
-            box['borderColor'] = borderColor;
-            box['backgroundColor'] = borderColor + '00';
-            console.log(box);
-            boxes.push(box);
-
-            updateAnnotations();
-            updateList();
-        }
-        
-    }
-    document.getElementById("annotation_class_cancle").addEventListener('click',cancleForm)
-    document.getElementById("annotation_class").addEventListener('click',closeForm)
-
-
-    async function updateDatabase() {
-        res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}})
-        })
-
-    firstBox = [...boxes]
-    updateList()
-    console.log({ "label": boxes, "label_by": {{ current_user.id }}})
-    }
-
-    async function submitTask() {
-        res = await fetch(`{{url_for('api.update_task',id=task.id)}}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ "label": boxes, "label_by": {{ current_user.id }}, "finished": true}),
-        })
-    firstBox = [...boxes]
-    console.log({ "label": boxes, "label_by": {{ current_user.id }}, "finished": true})
-    window.location.reload();
-    }
-
-    function updateAnnotations() {
-
-        const existingAnnotations = document.querySelectorAll('.annotation');
-        existingAnnotations.forEach((annotation) => {
-            annotation.remove();
-        });
-
-        boxes.forEach((box, index) => createAnnotation(box, index));
-    }
-
-    function arraysHaveSameContent(arr1, arr2) {
-        if (arr1.length !== arr2.length) return false;
-        return arr1.slice().sort().every((value, index) => value === arr2.slice().sort()[index]);
-    }
-    function updateList() {
-        if (arraysHaveSameContent(boxes, firstBox)) {
-            saveButton.classList.add('disabled');
-            // console.log(saveButton.classList)
-            console.log('disabled')
-            console.log(`box`);
-            console.log(boxes);
-            console.log(`firstBox`);
-            console.log(firstBox);
-        } else {
-            saveButton.classList.remove('disabled');
-            console.log('show')
-            console.log(`box`);
-            console.log(boxes);
-            console.log(`firstBox`);
-            console.log(firstBox);
-        }
-        annotationList.innerHTML = '';
-        boxes.forEach((box, index) => {
-            const listItem = document.createElement('li');
-            listItem.dataset.index = index
-            listItem.style.backgroundColor = box.backgroundColor
-            listItem.classList.add('list-group-item');
-            const tmp = `<input class="form-check-input me-1" type="checkbox" value="1" aria-label="..." disabled ><span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>`;
-            listItem.innerHTML = tmp
-            if (box.approved) {
-                const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." checked disabled>
+            annotationList.innerHTML = '';
+            boxes.forEach((box, index) => {
+                const listItem = document.createElement('li');
+                listItem.dataset.index = index
+                listItem.style.backgroundColor = box.backgroundColor
+                listItem.classList.add('list-group-item');
+                const tmp = `<input class="form-check-input me-1" type="checkbox" value="1" aria-label="..." disabled ><span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">id ${index}:  ${classesname[box.classname]}</span>`;
+                listItem.innerHTML = tmp
+                if (box.approved) {
+                    const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." checked disabled>
                 <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}"> ${classesname[box.classname]}</span>
                 <div class="text-dark">${box.commnet}</div>`;
-                listItem.innerHTML = tmp
-            }
-            else {
-                const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." disabled>
+                    listItem.innerHTML = tmp
+                }
+                else {
+                    const tmp = `<input class="form-check-input me-1" type="checkbox" id="check${index}" data-index="${index}" value="${index}" aria-label="..." disabled>
                 <span class="badge pill bg-secondary-light" style="background-color:${colors[box.classname]}">  ${classesname[box.classname]}</span>
                 <div class="text-dark">${box.commnet}</div>`;
-                listItem.innerHTML = tmp
-            }
-            // listItem.textContent = `${classesname[box.classname]}: x=${(box.x).toFixed(2)}, y=${(box.y).toFixed(2)}, width=${(box.width).toFixed(2)}, height=${box.height.toFixed(2)}, class=${box.classname}`;
-
-            listItem.addEventListener('click', function(e) {
-                const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
-                anno.classList.toggle('selected');
-                if ([... anno.classList].includes('selected')) {
-                    openForm();
-                } else {
-                    closeForm();
+                    listItem.innerHTML = tmp
                 }
-            })
-            listItem.addEventListener('mouseover', function(e) {
-                const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
-                anno.style.backgroundColor = box.borderColor+'44'
-                listItem.style.backgroundColor = box.borderColor+'44'
+                // listItem.textContent = `${classesname[box.classname]}: x=${(box.x).toFixed(2)}, y=${(box.y).toFixed(2)}, width=${(box.width).toFixed(2)}, height=${box.height.toFixed(2)}, class=${box.classname}`;
 
-            })
-            listItem.addEventListener('mouseout', function(e) {
-                const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
-                anno.style.backgroundColor = box.borderColor+'00'
-                listItem.style.backgroundColor = box.borderColor+'00'
-            })
-            annotationList.appendChild(listItem);
-        });
-    }
+                listItem.addEventListener('click', function (e) {
+                    const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
+                    anno.classList.toggle('selected');
+                    if ([...anno.classList].includes('selected')) {
+                        openForm();
+                    } else {
+                        closeForm();
+                    }
+                })
+                listItem.addEventListener('mouseover', function (e) {
+                    const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
+                    anno.style.backgroundColor = box.borderColor + '44'
+                    listItem.style.backgroundColor = box.borderColor + '44'
 
-    function adjustZoom(factor) {
-        zoomLevel += factor;
-        zoomLevel = Math.min(Math.max(zoomLevel, 20), 200);
-        image.style.width = `${zoomLevel}vw`;
-        // zoomLevelSpan.textContent = zoomLevel;
+                })
+                listItem.addEventListener('mouseout', function (e) {
+                    const anno = document.querySelector(`div.annotation[data-index="${index}"]`);
+                    anno.style.backgroundColor = box.borderColor + '00'
+                    listItem.style.backgroundColor = box.borderColor + '00'
+                })
+                annotationList.appendChild(listItem);
+            });
+        }
 
-        // Original dimensions
-        const originalWidth = image.naturalWidth;
-        const originalHeight = image.naturalHeight;
+        function adjustZoom(factor) {
+            zoomLevel += factor;
+            zoomLevel = Math.min(Math.max(zoomLevel, 20), 200);
+            image.style.width = `${zoomLevel}vw`;
+            // zoomLevelSpan.textContent = zoomLevel;
 
-        // Displayed dimensions
-        const displayedWidth = image.width;
-        const displayedHeight = image.height;
+            // Original dimensions
+            const originalWidth = image.naturalWidth;
+            const originalHeight = image.naturalHeight;
 
-        console.log(`Original dimensions: ${originalWidth}x${originalHeight}`);
-        console.log(`Displayed dimensions: ${displayedWidth}x${displayedHeight}`);
-        updateAnnotations();
-        updateList();
-    }
+            // Displayed dimensions
+            const displayedWidth = image.width;
+            const displayedHeight = image.height;
 
-    function createAnnotation(box, index) {
-        const annotation = document.createElement('div');
-        annotation.className = 'annotation';
-        annotation.dataset.index = index;
+            console.log(`Original dimensions: ${originalWidth}x${originalHeight}`);
+            console.log(`Displayed dimensions: ${displayedWidth}x${displayedHeight}`);
+            updateAnnotations();
+            updateList();
+        }
 
-        annotation.style.borderColor = box.borderColor;
-        annotation.style.backgroundColor = box.backgroundColor
-        // if (box.approved) {
-        //     annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} <i class="bi bi-check-circle-fill"></i> </span>`
-        // } else {
-        //     annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} `
-        // }
-        annotation.addEventListener('mousedown', function () {
-            if (mode =='edit') {
-                dragging = false;
-                annotation.classList.toggle('selected');
-            }
-        });
-        annotation.addEventListener('mouseover', function () {
-            if (mode=='edit') {
-                annotation.style.backgroundColor = box.borderColor+'33';
-                
+        function createAnnotation(box, index) {
+            const annotation = document.createElement('div');
+            annotation.className = 'annotation';
+            annotation.dataset.index = index;
 
-                dragging = false;
-                console.log(index);
-                annotation.style.zIndex = 999
-
-                const li = document.querySelector(`li[data-index="${index}"]`);
-                li.style.backgroundColor = box.borderColor+'33';
-            }
-            
-        });
-        annotation.addEventListener('mouseout', function () {
-            if (mode=='edit') {
-                const li = document.querySelector(`li[data-index="${index}"]`);
-                li.style.backgroundColor = box.borderColor+'00';
-            }
-            
-        });
-
-        annotation.addEventListener('click', function () {
-            if (mode =='edit') {
-                dragging = false;
-                annotation.classList.toggle('selected');
-                if ([... annotation.classList].includes('selected')) {
-                    openForm();
-                } else {
-                    closeForm();
-                }
-            }
-        });
-
-
-        annotation.style.left = `${box.x * image.width}px`;
-        annotation.style.top = `${box.y * image.height}px`;
-        annotation.style.width = `${box.width * image.width}px`;
-        annotation.style.height = `${box.height * image.height}px`;
-
-        ['nw', 'ne', 'sw', 'se', 'm'].forEach(pos => {
-            const handle = document.createElement('div');
-            handle.className = `resize-handle ${pos}`;
-            if (mode === 'draw'){
-                handle.style.display = 'none';
-            }
-            handle.style.position = 'absolute';
-            if (pos.includes('n')) handle.style.top = '-4px';
-            if (pos.includes('s')) handle.style.bottom = '-4px';
-            if (pos.includes('w')) handle.style.left = '-4px';
-            if (pos.includes('e')) handle.style.right = '-4px';
-            handle.style.width = '8px';
-            handle.style.height = '8px';
-            handle.style.backgroundColor = box.borderColor;
-            if (pos === 'm') {
-                handle.style.top = '2%';
-                handle.style.left = '2%';
-                handle.style.width = '95%';
-                handle.style.height = '95%';
-                handle.style.backgroundColor = box.backgroundColor
-                // handle.style.transform = 'translate(-50%, -50%)';
-                handle.style.borderRadius = '50%';
-                handle.addEventListener('click',function () {
-                if (mode =='edit') {
+            annotation.style.borderColor = box.borderColor;
+            annotation.style.backgroundColor = box.backgroundColor
+            // if (box.approved) {
+            //     annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} <i class="bi bi-check-circle-fill"></i> </span>`
+            // } else {
+            //     annotation.innerHTML = `<span style="background-color: ${box.borderColor}; color: #fff">id = ${index + 1} : ${classesname[box.classname]} `
+            // }
+            annotation.addEventListener('mousedown', function () {
+                if (mode == 'edit') {
                     dragging = false;
                     annotation.classList.toggle('selected');
-                if ([... annotation.classList].includes('selected')) {
-                    openForm();
-                } else {
-                    closeForm();
                 }
+            });
+            annotation.addEventListener('mouseover', function () {
+                if (mode == 'edit') {
+                    annotation.style.backgroundColor = box.borderColor + '33';
+                    dragging = false;
+                    console.log(index);
+                    annotation.style.zIndex = 999
+
+                    const li = document.querySelector(`li[data-index="${index}"]`);
+                    li.style.backgroundColor = box.borderColor + '33';
+                }
+
+            });
+            annotation.addEventListener('mouseout', function () {
+                if (mode == 'edit') {
+                    const li = document.querySelector(`li[data-index="${index}"]`);
+                    li.style.backgroundColor = box.borderColor + '00';
+                }
+
+            });
+
+            annotation.addEventListener('click', function () {
+                if (mode == 'edit') {
+                    dragging = false;
+                    annotation.classList.toggle('selected');
+                    if ([...annotation.classList].includes('selected')) {
+                        openForm();
+                    } else {
+                        closeForm();
+                    }
+                }
+            });
+
+
+            annotation.style.left = `${box.x * image.width}px`;
+            annotation.style.top = `${box.y * image.height}px`;
+            annotation.style.width = `${box.width * image.width}px`;
+            annotation.style.height = `${box.height * image.height}px`;
+
+            ['nw', 'ne', 'sw', 'se', 'm'].forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = `resize-handle ${pos}`;
+                if (mode === 'draw') {
+                    handle.style.display = 'none';
+                }
+                handle.style.position = 'absolute';
+                if (pos.includes('n')) handle.style.top = '-4px';
+                if (pos.includes('s')) handle.style.bottom = '-4px';
+                if (pos.includes('w')) handle.style.left = '-4px';
+                if (pos.includes('e')) handle.style.right = '-4px';
+                handle.style.width = '8px';
+                handle.style.height = '8px';
+                handle.style.backgroundColor = box.borderColor;
+                if (pos === 'm') {
+                    handle.style.top = '0px';
+                    handle.style.left = '0px';
+                    handle.style.width = '100%';
+                    handle.style.height = '100%';
+                    handle.style.backgroundColor = box.backgroundColor
+                    // handle.style.transform = 'translate(-50%, -50%)';
+                    handle.style.borderRadius = '10%';
+                    handle.addEventListener('click', function () {
+                        if (mode == 'edit') {
+                            dragging = false;
+                            annotation.classList.toggle('selected');
+                            if ([...annotation.classList].includes('selected')) {
+                                openForm();
+                            } else {
+                                closeForm();
+                            }
+                        }
+                    })
+                }
+                annotation.appendChild(handle);
+            });
+
+            container.appendChild(annotation);
+        }
+        zoomControl.addEventListener('mousedown', function (event) {
+            if (mode === 'edit') {
+                dragging = true;
+                isDragging = true;
+                const rect = image.getBoundingClientRect();
+                dragStartX = event.clientX - rect.left;
+                dragStartY = event.clientY - rect.top;
+
+                updateAnnotations()
             }
-            })
-            }
-            annotation.appendChild(handle);
+
         });
+        zoomControl.addEventListener('mousemove', function (event) {
+            if (dragging) {
+                const rect = image.getBoundingClientRect();
+                const end_x = (event.clientX - rect.left);
+                const end_y = (event.clientY - rect.top);
 
-        container.appendChild(annotation);
-    }
-    zoomControl.addEventListener('mousedown', function (event) {
-        if (mode === 'edit') {
-            dragging = true;
-            isDragging = true;
-            const rect = image.getBoundingClientRect();
-            dragStartX = event.clientX - rect.left;
-            dragStartY = event.clientY - rect.top;
-            
-            updateAnnotations()
-        }
-        
-    });
-    zoomControl.addEventListener('mousemove', function (event) {
-        if (dragging) {
-            const rect = image.getBoundingClientRect();
-            const end_x = (event.clientX - rect.left);
-            const end_y = (event.clientY - rect.top);
+                const dx = end_x - dragStartX;
+                const dy = end_y - dragStartY;
+                const tempw = container.style.width
+                const temph = container.style.height
 
-            const dx = end_x - dragStartX;
-            const dy = end_y - dragStartY;
-            const tempw = container.style.width 
-            const temph = container.style.height
-            
-            image
-            
-            
+                // image.style.position = "";
+                console.log(dx, dy, container.style.left, parseInt(container.style.top));
+                let valuex = parseInt(container.style.left) + dx
+                let valuey = parseInt(container.style.top) + dy
+                console.log(dx, dy, container.style.left, container.style.top, valuex, valuey);
+                container.style.left = (parseInt(container.style.left) + dx) + "px";
+                container.style.top = (parseInt(container.style.top) + dy) + "px";
+                container.style.width = tempw
+                container.style.height = temph
+                updateAnnotations()
+            }
 
-            
-            // image.style.position = "";
-            console.log(dx,dy,container.style.left,parseInt(container.style.top));
-            let valuex = parseInt(container.style.left) + dx
-            let valuey = parseInt(container.style.top) + dy
-            console.log(dx,dy,container.style.left,container.style.top,valuex,valuey);
-            container.style.left =  (parseInt(container.style.left) + dx) + "px";
-            container.style.top = (parseInt(container.style.top) + dy) + "px";
-            container.style.width = tempw
-            container.style.height = temph
-            updateAnnotations()
-        }
-        
-    });
-    zoomControl.addEventListener('mouseout', function(event) {
-        dragging=false;
-        updateAnnotations()
-    })
-    zoomControl.addEventListener('mouseup', function(event) {
-        dragging=false;
-        updateAnnotations()
-    })
-
-    container.addEventListener('mouseover', function (event) {
-        console.log('over');
-        if (mode === 'draw') {
-            this.style.cursor = 'default';
-        } else if (mode === 'edit') {
-            this.style.cursor = 'pointer';
-        }
-    });
-    container.addEventListener('mousedown', function (event) {
-        if (mode === 'draw') {
-            drawing = true;
-            const rect = image.getBoundingClientRect();
-            start_x = (event.clientX - rect.left + 13);
-            start_y = (event.clientY - rect.top);
-            console.log(`x=${start_x} , y=${start_y}`);
-        }
-    });
-
-    container.addEventListener('mousemove', function (event) {
-        console.log(dragging);
-        if (drawing) {
-            const rect = image.getBoundingClientRect();
-            const end_x = (event.clientX - rect.left );
-            const end_y = (event.clientY - rect.top);
-
-            const selectedClass = colorPicker.value - 1;
-            const classname = classesname[selectedClass]
-            const borderColor = colors[selectedClass];
-            const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
-
-            const box = {
-                x: Math.min(start_x, end_x) / image.width,
-                y: Math.min(start_y, end_y) / image.height,
-                width: Math.abs(end_x - start_x) / image.width,
-                height: Math.abs(end_y - start_y) / image.height,
-                classname: selectedClass,
-                borderColor: borderColor,
-                backgroundColor: borderColor + '00',
-                approved: false,
-                commnet: ''
-            };
-            if (box.height == 0 || box.width == 0) return;
-
-            console.log(box.width, box.height);
-
-            updateAnnotations();
-            updateList();
-            createAnnotation(box)
-            };
-        
-    });
-    container.addEventListener('mouseout', function (event) {
-        console.log('out');
-        // if (drawing) {
-        //     const rect = image.getBoundingClientRect();
-        //     const end_x = (event.clientX - rect.left );
-        //     const end_y = (event.clientY - rect.top);
-
-        //     const selectedClass = colorPicker.value - 1;
-        //     const classname = classesname[selectedClass]
-        //     const borderColor = colors[selectedClass];
-        //     const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
-
-        //     const box = {
-        //         x: Math.min(start_x, end_x) / image.width,
-        //         y: Math.min(start_y, end_y) / image.height,
-        //         width: Math.abs(end_x - start_x) / image.width,
-        //         height: Math.abs(end_y - start_y) / image.height,
-        //         classname: selectedClass,
-        //         borderColor: borderColor,
-        //         backgroundColor: borderColor + '00',
-        //         approved: false,
-        //         commnet: ''
-        //     };
-        //     if (box.height == 0 || box.width == 0) return;
-        //     openForm()
-            
-
-
-        //     boxes.push(box);
-
-        //     updateAnnotations();
-        //     updateList();
-        //     drawing = false
-        //     };
-    });
-
-    container.addEventListener('mouseup', function (event) {
-        if (drawing) {
-            drawing = false;
-            const rect = image.getBoundingClientRect();
-            const end_x = (event.clientX - rect.left);
-            const end_y = (event.clientY - rect.top);
-
-
-            const selectedClass = colorPicker.value - 1;
-            const classname = classesname[selectedClass]
-            const borderColor = colors[selectedClass];
-            const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
-
-            
-
-            const box = {
-                x: Math.min(start_x, end_x) / image.width,
-                y: Math.min(start_y, end_y) / image.height,
-                width: Math.abs(end_x - start_x) / image.width,
-                height: Math.abs(end_y - start_y) / image.height,
-                classname: selectedClass,
-                borderColor: borderColor,
-                backgroundColor: borderColor + '00',
-                approved: false,
-                commnet: ''
-            };
-            if (box.height == 0 || box.width == 0) return;
-            openForm()
-            
-
-
-            boxes.push(box);
-
-            updateAnnotations();
-            updateList();
-            // createAnnotation(box);
-        }
-        if (dragging) {
+        });
+        zoomControl.addEventListener('mouseout', function (event) {
             dragging = false;
-        }
-    });
+            updateAnnotations()
+        })
+        zoomControl.addEventListener('mouseup', function (event) {
+            dragging = false;
+            updateAnnotations()
+        })
 
-    zoomInButton.addEventListener('click', function () {
-        adjustZoom(10);
-    });
-
-    zoomOutButton.addEventListener('click', function () {
-        adjustZoom(-10);
-    });
-
-    deleteButton.addEventListener('click', function () {
-        // Collect all the selected annotations
-        const selectedAnnotations = document.querySelectorAll('.annotation.selected');
-
-        // Get their indices
-        const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
-
-        // Remove the annotation element from the DOM
-        selectedAnnotations.forEach(annotation => {
-            annotation.remove();
+        container.addEventListener('mouseover', function (event) {
+            console.log('over');
+            if (mode === 'draw') {
+                this.style.cursor = 'default';
+            } else if (mode === 'edit') {
+                this.style.cursor = 'pointer';
+            }
+        });
+        container.addEventListener('mousedown', function (event) {
+            if (mode === 'draw') {
+                drawing = true;
+                const rect = image.getBoundingClientRect();
+                start_x = (event.clientX - rect.left + 13);
+                start_y = (event.clientY - rect.top);
+                console.log(`x=${start_x} , y=${start_y}`);
+            }
         });
 
-        // Remove the corresponding boxes
-        boxes = boxes.filter((box, index) => !indicesToDelete.includes(index));
+        container.addEventListener('mousemove', function (event) {
+            console.log(dragging);
+            if (drawing) {
+                const rect = image.getBoundingClientRect();
+                const end_x = (event.clientX - rect.left);
+                const end_y = (event.clientY - rect.top);
 
-        // Update indices and re-render all remaining annotations
-        updateAnnotations();
-        updateList();
-    });
+                const selectedClass = colorPicker.value - 1;
+                const classname = classesname[selectedClass]
+                const borderColor = colors[selectedClass];
+                const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
 
-    resetButton.addEventListener('click', function () {
-        boxes = []
-        updateAnnotations();
-        updateList();
-    })
+                const box = {
+                    x: Math.min(start_x, end_x) / image.width,
+                    y: Math.min(start_y, end_y) / image.height,
+                    width: Math.abs(end_x - start_x) / image.width,
+                    height: Math.abs(end_y - start_y) / image.height,
+                    classname: selectedClass,
+                    borderColor: borderColor,
+                    backgroundColor: borderColor + '00',
+                    approved: false,
+                    commnet: ''
+                };
+                if (box.height == 0 || box.width == 0) return;
 
-    container.addEventListener('mousedown', function (event) {
-        const handle = event.target.closest('.resize-handle');
-        if (handle) {
-            resizing = true;
-            currentHandle = handle;
-            // console.log(currentHandle);
-        }
-    });
+                console.log(box.width, box.height);
 
-    document.addEventListener('mouseup', function () {
-        resizing = false;
-        currentHandle = null;
-    });
-    zoomControl.addEventListener('wheel', function (event) {
-        if (event.ctrlKey) {
-            adjustZoom(event.deltaY < 0 ? 5 : -5);
-            event.preventDefault();
-        }
-        
-    });
+                updateAnnotations();
+                updateList();
+                createAnnotation(box)
+            };
 
-    container.addEventListener('mousemove', function (event) {
-        if (!resizing || !currentHandle) return;
-        const rect = image.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / image.width;
-        const y = (event.clientY - rect.top) / image.height;
-        const box = boxes[parseInt(currentHandle.parentElement.dataset.index)];
-        const canses = currentHandle.className.split(' ')[1]
+        });
+        container.addEventListener('mouseout', function (event) {
+            console.log('out');
+            // if (drawing) {
+            //     const rect = image.getBoundingClientRect();
+            //     const end_x = (event.clientX - rect.left );
+            //     const end_y = (event.clientY - rect.top);
 
-        switch (canses) {
-            case 'nw':
-                box.width += (box.x - x);
-                box.height += (box.y - y);
-                box.x = x;
-                box.y = y;
-                break;
-            case 'ne':
-                box.width = x - box.x;
-                box.height += box.y - y;
-                box.y = y;
-                break;
-            case 'sw':
-                box.width += box.x - x;
-                box.height = y - box.y;
-                box.x = x;
-                break;
-            case 'se':
-                box.width = x - box.x;
-                box.height = y - box.y;
-                break;
-            case 'm':
-                const deltaX = (x - (box.x + box.width / 2));
-                const deltaY = (y - (box.y + box.height / 2));
-                box.x += deltaX;
-                box.y += deltaY;
-        }
-        if (box.x < 0) {
-            box.x = 0
-        }
-        if (box.y < 0) {
-            box.y = 0
-        }
-        if (box.x + box.width > 1 ) {
-            // console.log(box.x , box.width);
-            box.x = 1 - box.width
-            // box.width = 1 - box.x
-            // return
-        }
-        if (box.y + box.height > 1) {
-            // box.height = 1 - box.y
-            box.y = 1 - box.height
-            // return
-        }
-        
+            //     const selectedClass = colorPicker.value - 1;
+            //     const classname = classesname[selectedClass]
+            //     const borderColor = colors[selectedClass];
+            //     const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
 
-        updateAnnotations();
-        updateList();
-    });
+            //     const box = {
+            //         x: Math.min(start_x, end_x) / image.width,
+            //         y: Math.min(start_y, end_y) / image.height,
+            //         width: Math.abs(end_x - start_x) / image.width,
+            //         height: Math.abs(end_y - start_y) / image.height,
+            //         classname: selectedClass,
+            //         borderColor: borderColor,
+            //         backgroundColor: borderColor + '00',
+            //         approved: false,
+            //         commnet: ''
+            //     };
+            //     if (box.height == 0 || box.width == 0) return;
+            //     openForm()
 
-    // Listen for keyboard shortcuts for undo (Ctrl+Z) and redo (Ctrl+Shift+Z)
-    document.addEventListener('keydown', function (event) {
 
-        if (!isNaN(event.key) && event.key >= 1 && event.key <= colorPicker.options.length) {
-            colorPicker.value = event.key;
 
-            // Trigger the change event if there's an event listener for it
-            const changeEvent = new Event('change');
-            colorPicker.dispatchEvent(changeEvent);
-        }
+            //     boxes.push(box);
 
-        // Check if Ctrl+Enter is pressed
-        if (event.ctrlKey && event.key === 'Enter') {
-            // Call the desired function or action here
-            submitTask()
+            //     updateAnnotations();
+            //     updateList();
+            //     drawing = false
+            //     };
+        });
 
-        }
+        container.addEventListener('mouseup', function (event) {
+            if (drawing) {
+                drawing = false;
+                const rect = image.getBoundingClientRect();
+                const end_x = (event.clientX - rect.left);
+                const end_y = (event.clientY - rect.top);
 
-        if (event.key === 'Backspace') {
-            // Perform deletion here
+
+                const selectedClass = colorPicker.value - 1;
+                const classname = classesname[selectedClass]
+                const borderColor = colors[selectedClass];
+                const setOpacity = (hex, alpha) => `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
+
+
+
+                const box = {
+                    x: Math.min(start_x, end_x) / image.width,
+                    y: Math.min(start_y, end_y) / image.height,
+                    width: Math.abs(end_x - start_x) / image.width,
+                    height: Math.abs(end_y - start_y) / image.height,
+                    classname: selectedClass,
+                    borderColor: borderColor,
+                    backgroundColor: borderColor + '00',
+                    approved: false,
+                    commnet: ''
+                };
+                if (box.height == 0 || box.width == 0) return;
+                openForm()
+
+
+
+                boxes.push(box);
+
+                updateAnnotations();
+                updateList();
+                // createAnnotation(box);
+            }
+            if (dragging) {
+                dragging = false;
+            }
+        });
+
+        zoomInButton.addEventListener('click', function () {
+            adjustZoom(10);
+        });
+
+        zoomOutButton.addEventListener('click', function () {
+            adjustZoom(-10);
+        });
+
+        deleteButton.addEventListener('click', function () {
+            // Collect all the selected annotations
             const selectedAnnotations = document.querySelectorAll('.annotation.selected');
 
             // Get their indices
@@ -995,78 +883,211 @@
             // Update indices and re-render all remaining annotations
             updateAnnotations();
             updateList();
-        }
+        });
 
-        if (event.key === 'r') {
-            setMode('draw')
-        }
-        if (event.key === 'e') {
-            setMode('edit')
-        }
-        {% if start %}  
-        {% else %}
-        if (event.key === '[') {
-            // setMode('draw')
-            document.getElementById("prev-button").click();
-            
-        }
-        {% endif %}
-        {% if end %} 
-        {% else %}
-        if (event.key === ']') {
-            // setMode('draw')
-            document.getElementById("next-button").click();
-        }
-        
-        {% endif %}
-        if (event.ctrlKey && event.key === 's') {
-            // console.log('save');
-            updateDatabase()
-        }
-        if (event.ctrlKey && event.key === 'enter') {
-            // console.log('save');
-            submitTask()
-            {% if end %} 
+        resetButton.addEventListener('click', function () {
+            boxes = []
+            updateAnnotations();
+            updateList();
+        })
+
+        document.addEventListener('mouseup', function () {
+            resizing = false;
+            currentHandle = null;
+        });
+
+        zoomControl.addEventListener('wheel', function (event) {
+            if (event.ctrlKey) {
+                adjustZoom(event.deltaY < 0 ? 5 : -5);
+                event.preventDefault();
+            }
+        });
+
+        // Start Move box 
+        container.addEventListener('mousedown', function (event) {
+            const handle = event.target.closest('.resize-handle');
+            if (handle) {
+                resizing = true;
+                currentHandle = handle;
+                // console.log(currentHandle);
+                const rect = image.getBoundingClientRect();
+                start_x = (event.clientX - rect.left) / image.width;
+                start_y = (event.clientY - rect.top) / image.height;
+            }
+        });
+
+        // Move box
+        container.addEventListener('mousemove', function (event) {
+            if (!resizing || !currentHandle) return;
+            const rect = image.getBoundingClientRect();
+            const x = (event.clientX - rect.left) / image.width;
+            const y = (event.clientY - rect.top) / image.height;
+            const box = boxes[parseInt(currentHandle.parentElement.dataset.index)];
+            const canses = currentHandle.className.split(' ')[1]
+
+            switch (canses) {
+                case 'nw':
+                    box.width += (box.x - x);
+                    box.height += (box.y - y);
+                    box.x = x;
+                    box.y = y;
+                    break;
+                case 'ne':
+                    box.width = x - box.x;
+                    box.height += box.y - y;
+                    box.y = y;
+                    break;
+                case 'sw':
+                    box.width += box.x - x;
+                    box.height = y - box.y;
+                    box.x = x;
+                    break;
+                case 'se':
+                    box.width = x - box.x;
+                    box.height = y - box.y;
+                    break;
+                case 'm':
+                    // const deltaX = (x - (box.x + box.width / 2));
+                    // const deltaY = (y - (box.y + box.height / 2));
+                    // box.x += deltaX;
+                    // box.y += deltaY;
+                    box.x +=  x - start_x;
+                    box.y +=  y - start_y;
+                    start_x = x
+                    start_y = y
+                    
+            }
+            if (box.x < 0) {
+                box.x = 0
+            }
+            if (box.y < 0) {
+                box.y = 0
+            }
+            if (box.x + box.width > 1) {
+                // console.log(box.x , box.width);
+                box.x = 1 - box.width
+                // box.width = 1 - box.x
+                // return
+            }
+            if (box.y + box.height > 1) {
+                // box.height = 1 - box.y
+                box.y = 1 - box.height
+                // return
+            }
+
+
+            updateAnnotations();
+            updateList();
+        });
+
+        // Listen for keyboard shortcuts for undo (Ctrl+Z) and redo (Ctrl+Shift+Z)
+        document.addEventListener('keydown', function (event) {
+
+            if (!isNaN(event.key) && event.key >= 1 && event.key <= colorPicker.options.length) {
+                colorPicker.value = event.key;
+
+                // Trigger the change event if there's an event listener for it
+                const changeEvent = new Event('change');
+                colorPicker.dispatchEvent(changeEvent);
+            }
+
+            // Check if Ctrl+Enter is pressed
+            if (event.ctrlKey && event.key === 'Enter') {
+                // Call the desired function or action here
+                submitTask()
+
+            }
+
+            if (event.key === 'Backspace') {
+                // Perform deletion here
+                const selectedAnnotations = document.querySelectorAll('.annotation.selected');
+
+                // Get their indices
+                const indicesToDelete = Array.from(selectedAnnotations).map(annotation => parseInt(annotation.dataset.index, 10));
+
+                // Remove the annotation element from the DOM
+                selectedAnnotations.forEach(annotation => {
+                    annotation.remove();
+                });
+
+                // Remove the corresponding boxes
+                boxes = boxes.filter((box, index) => !indicesToDelete.includes(index));
+
+                // Update indices and re-render all remaining annotations
+                updateAnnotations();
+                updateList();
+            }
+
+            if (event.key === 'r') {
+                setMode('draw')
+            }
+            if (event.key === 'e') {
+                setMode('edit')
+            }
+            {% if start %}
+            {% else %}
+            if (event.key === '[') {
+                // setMode('draw')
+                document.getElementById("prev-button").click();
+
+            }
+            {% endif %}
+            {% if end %}
             {% else %}
             if (event.key === ']') {
                 // setMode('draw')
                 document.getElementById("next-button").click();
             }
-            
+
             {% endif %}
-
-        }
-        // Check if Ctrl+Z is pressed
-        if (event.ctrlKey && event.key === 'z') {
-
-            if (boxes.length > 0) {
-                // Pop the last box and store it in the undo stack
-                const lastBox = boxes.pop();
-                undoStack.push(lastBox);
-
-                // Update annotations and list
-                updateAnnotations();
-                updateList();
+            if (event.ctrlKey && event.key === 's') {
+                // console.log('save');
+                updateDatabase()
             }
-        }
-        // Implement Ctrl+Shift+Z for redo
-        else if (event.ctrlKey && event.shiftKey && event.key === 'Z') {
-            if (undoStack.length > 0) {
-                // Pop the last undone box and put it back in boxes
-                const lastUndoneBox = undoStack.pop();
-                boxes.push(lastUndoneBox);
+            if (event.ctrlKey && event.key === 'enter') {
+                // console.log('save');
+                submitTask()
+                {% if end %}
+                {% else %}
+                if (event.key === ']') {
+                    // setMode('draw')
+                    document.getElementById("next-button").click();
+                }
 
-                // Update annotations and list
-                updateAnnotations();
-                updateList();
+                {% endif %}
+
             }
-        }
+            // Check if Ctrl+Z is pressed
+            if (event.ctrlKey && event.key === 'z') {
+
+                if (boxes.length > 0) {
+                    // Pop the last box and store it in the undo stack
+                    const lastBox = boxes.pop();
+                    undoStack.push(lastBox);
+
+                    // Update annotations and list
+                    updateAnnotations();
+                    updateList();
+                }
+            }
+            // Implement Ctrl+Shift+Z for redo
+            else if (event.ctrlKey && event.shiftKey && event.key === 'Z') {
+                if (undoStack.length > 0) {
+                    // Pop the last undone box and put it back in boxes
+                    const lastUndoneBox = undoStack.pop();
+                    boxes.push(lastUndoneBox);
+
+                    // Update annotations and list
+                    updateAnnotations();
+                    updateList();
+                }
+            }
+        });
+        container.style.left = 0 + 'px'
+        container.style.top = 0 + 'px'
+        // fun
+        setMode('draw')
     });
-    container.style.left = 0+'px'
-    container.style.top = 0+'px'
-    // fun
-    setMode('draw')
-});
 
 </script>
 {% endblock %}
