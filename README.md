@@ -6,6 +6,9 @@
 git clone https://github.com/film8844/kbtg-labeling-tools.git
 ```
 2. 📄 Create `.env` file. copy from `.docker.env`
+```bash
+cp .docker.env .env
+```
 
 ## 🛠 Run on Local (for Development)
 1. 🚀 Start database with docker
@@ -22,11 +25,11 @@ pip install -r requirements.txt
 
 # run
 cd src
-export $(cat ../.env)
+export $(cat ../.env.dev)
 python run.py
 ```
 
-## 🐳 Run on Docker (for Production)
+## 🐳 Deployment with Docker (for Production)
 ```bash
 docker compose up -d --build
 ```
