@@ -7,13 +7,12 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: cp .docker.env .env
-      run: docker compose up --build -d
+    - name: Copy environment file and build Docker image
+      run: |
+        cp .docker.env .env
+        docker compose up --build -d
