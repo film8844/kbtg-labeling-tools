@@ -347,7 +347,7 @@
         searchTasks.addEventListener('focusout', function (event) {
             focus = false;
         });
-        searchTasks.addEventListener('onchange', function (event) {
+        searchTasks.addEventListener('keypress', function (event) {
             var filter = searchTasks.value.toUpperCase();
             var li = document.getElementById('list-task').getElementsByTagName("li");
             console.log(li);
@@ -625,8 +625,14 @@
         function adjustZoom(factor) {
             zoomLevel += factor;
             zoomLevel = Math.min(Math.max(zoomLevel, 20), 200);
-            image.style.width = `${zoomLevel}vw`;
+            if (image.width > image.height) {
+                image.style.width = `${zoomLevel}vw`;
+            } else {
+                image.style.height = `${zoomLevel}vh`;
+            }
+            
             // zoomLevelSpan.textContent = zoomLevel;
+            
 
             // Original dimensions
             const originalWidth = image.naturalWidth;
@@ -652,6 +658,7 @@
             }
             // console.log(image.width,image.height);
             // console.log(container.style.width,container.style.height);
+            updateAnnotations()
         }
 
         // Create Box
