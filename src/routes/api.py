@@ -1,5 +1,5 @@
-from flask import Blueprint, jsonify,request,send_from_directory
-from models import User, Project ,Task,serialize
+from flask import Blueprint, jsonify,request,send_from_directory,redirect,url_for,flash
+from models import User, Project ,Task,serialize, project_user
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from random import randint
 from app import db
@@ -13,9 +13,8 @@ router = Blueprint('api', __name__)
 
 @router.route('/api/projects', methods=['GET'])
 def projects():
-    query = serialize(Project.query.filter_by(creator_id=current_user.id).all())
+    query = serialize(Project.query.filter_by(creator_id=current_user.id).all()) + serialize(Project.query.join(project_user,Project.id==project_user.project_id).filter(project_user.user_id==current_user.id).all())
     projects = []
-    
     for i in query:
         all_task = Task.query.filter(Task.project_id == i['id']).all()
         if len(all_task) != 0:
@@ -99,6 +98,7 @@ def export(id):
     return send_from_directory(directory='export_file',path=zipname, as_attachment=True)
 
 @router.route('/api/task/<id>', methods=['POST'])
+@login_required
 def update_task(id):
     task = Task.query.get(id)
     if not task:
@@ -110,11 +110,13 @@ def update_task(id):
         return {"message": "Label field is required"}, 400
     
     task.label = data["label"]
-    task.label_by = data.get("label_by")  # Optional, remove this line if you don't want to update the label_by field
-    try:
+    task.label_by = current_user.id # Optional, remove this line if you don't want to update the label_by field
+    if "finished" in list(data.keys()):
         task.finished = data["finished"]
-    except:
-        pass
+    if "approved" in list(data.keys()):
+        task.approved = data["approved"]
+        if not data["approved"]:
+            task.finished = False
     db.session.commit()
     
     return task.to_dict(), 200
@@ -128,3 +130,50 @@ def get_task(id):
     print(task.label)
     
     return jsonify(task.label), 200
+
+@router.route('/api/user/<id>', methods=['GET'])
+def get_user(id):
+    user = User.query.get(id)
+    if not user:
+        return {"message": "user not found"}, 404
+    print(user.to_dict())
+    return jsonify(user.to_dict()), 200
+
+@router.route('/api/users/', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    if not users:
+        return {"message": "user not found"}, 404
+    users = [user.to_dict() for user in users]
+    
+    return jsonify({'users':users}), 200
+
+@router.route('/api/projects/<id>/add_user/', methods=['POST'])
+def project_add_user(id):
+    query = Project.query.filter_by(id=id).first()
+    if query is None:
+        return "error", 404
+    user_id = int(request.form.get('user'))
+    role = request.form.get('role')
+    if user_id == query.creator_id:
+        flash('this user is Owner.','danger')
+        return redirect(url_for('main.project',id=id))
+    check = project_user.query.filter_by(project_id=id,user_id=user_id).first()
+    if check:
+        flash(f'this user is {check.role}.','danger')
+        return redirect(url_for('main.project',id=id))
+    member = project_user(project_id=id,user_id=user_id,role=role)
+    db.session.add(member)
+    db.session.commit()
+    return redirect(url_for('main.project',id=id))
+
+@router.route('/api/projects/<id>/get_users/', methods=['GET'])
+def project_get_users(int: id):
+    query = Project.query.filter_by(id=id).first()
+    if query is None:
+        return "error", 404
+    users = project_user.query.filter_by(project_id=id).all()
+    users = serialize(users)
+    return users
+
+

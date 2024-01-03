@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiple Popups with Form</title>
+<style>
+  /* Style for the popup */
+  .popup {
+    display: none;
+    position: absolute;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+  }
+
+  /* Style for the clickable divs */
+  .clickable-div {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    margin-top: 20px;
+    cursor: pointer;
+    position: relative; /* Ensure that the popup is positioned relative to this div */
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="clickable-div">Click me for a popup!</div>
+  <div class="popup">
+    <form>
+      <textarea placeholder="Type here..."></textarea>
+      <button type="button" onclick="submitForm(this)">Submit</button>
+      <button type="button" onclick="closePopup(this)">Close</button>
+    </form>
+  </div>
+</div>
+
+<div class="container">
+  <div class="clickable-div">Click me for another popup!</div>
+  <div class="popup">
+    <form>
+      <textarea placeholder="Type here..."></textarea>
+      <button type="button" onclick="submitForm(this)">Submit</button>
+      <button type="button" onclick="closePopup(this)">Close</button>
+    </form>
+  </div>
+</div>
+
+<!-- More divs can be added here following the same pattern -->
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const containers = document.querySelectorAll('.container');
+
+  containers.forEach(container => {
+    const clickableDiv = container.querySelector('.clickable-div');
+    const popup = container.querySelector('.popup');
+
+    clickableDiv.addEventListener('click', function(event) {
+      // Position the popup div at the click position
+      const rect = clickableDiv.getBoundingClientRect();
+      popup.style.left = event.clientX - rect.left + 'px'; // Adjust position relative to clickableDiv
+      popup.style.top = event.clientY - rect.top + 'px';   // Adjust position relative to clickableDiv
+      popup.style.display = 'block';
+      event.stopPropagation(); // Prevent the click from being registered on the window
+    });
+  });
+
+  // Event listener for the window to close any popups when clicking outside
+  window.addEventListener('click', function(event) {
+    document.querySelectorAll('.popup').forEach(popup => {
+      if (!popup.contains(event.target) && !event.target.matches('.clickable-div')) {
+        popup.style.display = 'none';
+      }
+    });
+  });
+});
+
+function closePopup(button) {
+  // Close the popup by setting its display style to 'none'
+  button.closest('.popup').style.display = 'none';
+}
+
+function submitForm(button) {
+  // Placeholder for form submission logic
+  alert('Form submitted!'); // Replace this with actual submission logic
+  button.closest('.popup').style.display = 'none';
+}
+</script>
+
+</body>
+</html>

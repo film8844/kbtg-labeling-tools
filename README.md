@@ -10,7 +10,7 @@ git clone https://github.com/film8844/kbtg-labeling-tools.git
 ## 🛠 Run on Local (for Development)
 1. 🚀 Start database with docker
 ```bash
-docker-compose -f docker-compos.database.yml up -d
+docker compose --file docker-compose.database.yaml up -d 
 ```
 2. 📦 Install packages
 ```bash
@@ -25,7 +25,9 @@ cd src
 export $(cat ../.env)
 python run.py
 ```
+
 ## 🐳 Run on Docker (for Production)
 ```bash
 docker compose up -d --build
 ```
+

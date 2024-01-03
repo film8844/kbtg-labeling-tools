@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block css %}
+<style>
+    #myCanvas {
+        border: 1px solid black;
+    }
+
+    #divCanvas {
+        height: 110vh;
+        overflow: hidden;
+    }
+
+    canvas {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-2">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Task</h5>
+                    {% for task in tasks %}
+                        <p>{{task}}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-10">
+        <div class="row">
+            <div class="col-10" id="divCanvas">
+                <canvas id="myCanvas"></canvas>
+            </div>
+            <div class="col-2">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div style="height: 100%;overflow: auto;" id="annotation-list" class="card-body ">
+                            <h5 class="card-title">Annotation List</h5>
+                            <ul class="list-group" id="list">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <button id="createBoxModeBtn" class="control-btn">Create Box Mode</button>
+    <button id="zoomDragModeBtn" class="control-btn">Zoom & Drag Mode</button>
+    <button id="editBoxModeBtn" class="control-btn">Edit Box Mode</button>
+    <button id="zoomInBtn" class="control-btn">Zoom In</button>
+    <button id="zoomOutBtn" class="control-btn">Zoom Out</button>
+    <button id="resetBtn" class="control-btn">Reset</button>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    let canvas = document.getElementById('myCanvas');
+    let ctx = canvas.getContext('2d');
+    let image = new Image();
+    image.src = 'https://imageio.forbes.com/specials-images/imageserve/5d35eacaf1176b0008974b54/0x0.jpg?format=jpg&crop=4560,2565,x790,y784,safe&width=1200';
+    let scale = 1;
+    let imageX, imageY;
+    let minScale = 5;
+    const scaleMultiplier = 0.8;
+    let startDragOffset = {};
+    let mouseDown = false;
+    let mode = 'createBox';
+    let boxes = [];
+    let currentBox = null;
+    let dragged = false;
+    let selectedBoxIndex = -1;
+
+    let modeDisplay = document.getElementById('modeDisplay');
+
+    function setMode(newMode) {
+        mode = newMode;
+        modeDisplay.textContent = `Mode: ${mode}`;
+    }
+
+    image.onload = function () {
+        let divCanvas = document.getElementById('divCanvas');
+        scale = Math.min(divCanvas.clientWidth / image.width, divCanvas.clientHeight / image.height);
+        canvas.width = image.width * scale;
+        canvas.height = image.height * scale;
+        imageX = 0;
+        imageY = 0;
+        redraw();
+    };
+
+    function redraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, imageX, imageY, image.width * scale, image.height * scale);
+        boxes.forEach(box => drawBox(box));
+        if (currentBox) {
+            drawBox(currentBox);
+        }
+    }
+
+    function drawBox(box) {
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(box.startX * image.width * scale + imageX, box.startY * image.height * scale + imageY, box.width * image.width * scale, box.height * image.height * scale);
+    }
+
+    function isWithinImageBounds(x, y) {
+        return x >= imageX && x <= imageX + image.width * scale &&
+            y >= imageY && y <= imageY + image.height * scale;
+    }
+
+    function updateBoxList() {
+        let boxListHtml = '';
+        boxes.forEach((box, index) => {
+            boxListHtml += `<div>Box ${index + 1}: (${box.startX.toFixed(2)}, ${box.startY.toFixed(2)}, ${box.width.toFixed(2)}, ${box.height.toFixed(2)})</div>`;
+        });
+        document.getElementById('boxList').innerHTML = boxListHtml;
+    }
+
+    canvas.addEventListener('mousedown', function (e) {
+        mouseDown = true;
+        startDragOffset.x = e.clientX - canvas.offsetLeft;
+        startDragOffset.y = e.clientY - canvas.offsetTop;
+        console.log(image.width, image.height);
+
+        if (mode === 'createBox') {
+            let rect = canvas.getBoundingClientRect();
+            if (isWithinImageBounds(e.clientX - rect.left, e.clientY - rect.top)) {
+                currentBox = {
+                    startX: (e.clientX - rect.left - imageX) / image.width,
+                    startY: (e.clientY - rect.top - imageY) / image.height,
+                    width: 0,
+                    height: 0
+                };
+            }
+        }
+        if (mode === 'editBox') {
+            let rect = canvas.getBoundingClientRect();
+            let mouseX = (e.clientX - rect.left - imageX) / scale;
+            let mouseY = (e.clientY - rect.top - imageY) / scale;
+
+            selectedBoxIndex = boxes.findIndex(box =>
+                mouseX >= box.startX && mouseX <= box.startX + box.width &&
+                mouseY >= box.startY && mouseY <= box.startY + box.height);
+
+            if (selectedBoxIndex !== -1) {
+                console.log(`Box ${selectedBoxIndex + 1} selected for editing`);
+                // Additional code to handle the selected box (e.g., show resize handles)
+            }
+        }
+    });
+
+    canvas.addEventListener('mousemove', function (e) {
+        if (mouseDown) {
+            if (mode === 'createBox' && currentBox) {
+                let rect = canvas.getBoundingClientRect();
+                let endX = (e.clientX - rect.left - imageX) / image.width;
+                let endY = (e.clientY - rect.top - imageY) / image.height;
+
+                currentBox.width = (Math.min(endX, 1) - currentBox.startX);
+                currentBox.height = (Math.min(endY, 1) - currentBox.startY);
+                console.log(currentBox);
+                redraw();
+            } else if (mode === 'zoomDrag') {
+                dragged = true;
+                let dx = e.clientX - startDragOffset.x;
+                let dy = e.clientY - startDragOffset.y;
+                imageX += dx;
+                imageY += dy;
+                startDragOffset.x = e.clientX;
+                startDragOffset.y = e.clientY;
+                redraw();
+            }
+        }
+    });
+
+    canvas.addEventListener('mouseup', function (e) {
+        if (mode === 'createBox' && currentBox && !dragged) {
+            let rect = canvas.getBoundingClientRect();
+            if (isWithinImageBounds(e.clientX - rect.left, e.clientY - rect.top)) {
+                boxes.push(currentBox);
+                updateBoxList();
+                console.log(boxes);
+            } else {
+                updateBoxList();
+            }
+            currentBox = null;
+        }
+        mouseDown = false;
+        dragged = false;
+    });
+
+
+
+    function zoom(change) {
+        let factor = Math.pow(scaleMultiplier, change);
+        let newScale = scale * factor;
+
+        if (1) {
+            let oldScale = scale;
+            scale = newScale;
+
+            // Adjust imageX and imageY to keep the image centered on zoom
+            let rect = canvas.getBoundingClientRect();
+            let centerX = (rect.left + rect.right) / 2;
+            let centerY = (rect.top + rect.bottom) / 2;
+
+            imageX = centerX - (centerX - imageX) * scale / oldScale;
+            imageY = centerY - (centerY - imageY) * scale / oldScale;
+            console.log('redraw');
+            redraw();
+        }
+    }
+
+    canvas.addEventListener('wheel', function (event) {
+        if (mode === 'zoomDrag') {
+            zoom(event.deltaY < 0 ? 0.1 : -0.2);
+            event.preventDefault();
+        }
+    });
+
+
+    document.getElementById('createBoxModeBtn').addEventListener('click', function () { setMode('createBox'); });
+    document.getElementById('zoomDragModeBtn').addEventListener('click', function () { setMode('zoomDrag'); });
+    document.getElementById('editBoxModeBtn').addEventListener('click', function () {
+        setMode('editBox');
+    });
+
+    function zoomIn() {
+        console.log('zoom in');
+        zoom(-1);
+    }
+
+    function zoomOut() {
+        console.log('zoom out');
+        zoom(1);
+    }
+
+    function zoomFit() {
+        console.log(canvas.width, canvas.height);
+        if (canvas.width > canvas.height) {
+            scale = canvas.width / image.width;
+        } else {
+            scale = canvas.height / image.height;
+        }
+        scale = 1;
+        console.log(scale);
+        imageX = 0;
+        imageY = 0;
+        redraw();
+    }
+    document.getElementById('zoomInBtn').addEventListener('click', zoomIn);
+    document.getElementById('zoomOutBtn').addEventListener('click', zoomOut);
+    document.getElementById('resetBtn').addEventListener('click', zoomFit);
+
+    updateBoxList();
+    document.addEventListener('keydown', function (event) {
+        console.log(event.key);
+        if (event.key === 'b') {
+            setMode('createBox');
+        }
+        if (event.key === 'v') {
+            setMode('zoomDrag');
+        }
+    })
+    console.log(scale);
+</script>
+{% endblock %}

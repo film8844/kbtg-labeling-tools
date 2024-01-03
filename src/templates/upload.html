@@ -36,7 +36,7 @@
     {% endwith %}
 
     {{ dropzone.create(action=url_for('main.upload_file',project_id=project.id)) }}
-    <div class="text-center "><a class="btn btn-primary btn-lg" href="{{url_for('main.project',id=project.id)}}">Back to Project</a></div>
+    <div class="text-center "><div id="file-count">Files uploaded: 0</div><a class="btn btn-primary btn-lg" href="{{url_for('main.project',id=project.id)}}">Back to Project</a></div>
     
 
 
@@ -91,5 +91,15 @@
 
 {% block script %}
 {{ dropzone.load_js() }}
+<script>
+    Dropzone.options.myAwesomeDropzone = {
+        init: function() {
+            this.on("addedfile", function(file) {
+                var count = parseInt(document.getElementById("file-count").innerText.split(":")[1].trim()) + 1;
+                document.getElementById("file-count").innerText = "Files uploaded: " + count;
+            });
+        }
+    };
+</script>
 {{ dropzone.config() }}
 {% endblock %}
